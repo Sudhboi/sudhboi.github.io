@@ -101,62 +101,6 @@ header nav {
   }
 }
 
-/* Wide screens: header and footer form a sidebar pinned on the left, and only
-   the content on the right scrolls. Header and footer both span the whole
-   height of the grid, so each can stick (to the top and bottom respectively)
-   for as long as the content keeps scrolling. */
-@media (min-width: 1100px) and (min-height: 560px) {
-  body {
-    display: grid;
-    grid-template-columns: 30rem minmax(0, 72ch);
-    grid-template-rows: 1fr;
-    justify-content: center;
-    max-width: none;
-    min-height: 100vh;
-    padding: 2rem 1.5rem;
-  }
-
-  header,
-  footer {
-    grid-column: 1;
-    grid-row: 1;
-    position: sticky;
-    padding-right: 2rem;
-  }
-
-  header {
-    top: 2rem;
-    align-self: start;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-    padding-top: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-
-  header nav {
-    flex: none;
-    width: 100%;
-  }
-
-  footer {
-    bottom: 2rem;
-    align-self: end;
-  }
-
-  main {
-    grid-column: 2;
-    grid-row: 1;
-    padding: 0 0 2rem 2rem;
-    border-left: 1px solid var(--rule);
-  }
-
-  main > :first-child {
-    margin-top: 0;
-  }
-}
-
 .logo {
   /* Room for the expanded "(λx.Sudhir Krisna)", so the nav doesn't shift. */
   min-width: 18ch;
@@ -306,4 +250,69 @@ footer p {
 .footnote {
   font-size: 0.75rem;
   font-style: italic;
+}
+
+/* Header and footer share a wrapper so they can form the wide-screen sidebar.
+   Elsewhere it dissolves, and the footer goes back below the content. */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar {
+  display: contents;
+}
+
+footer {
+  order: 1;
+}
+
+/* Wide screens: header and footer form one sidebar pinned on the left, and
+   only the content on the right scrolls. Kept last so it overrides the base
+   rules above. */
+@media (min-width: 1100px) and (min-height: 560px) {
+  body {
+    display: grid;
+    grid-template-columns: 30rem minmax(0, 72ch);
+    justify-content: center;
+    max-width: none;
+    padding: 2rem 1.5rem;
+  }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    padding-right: 2rem;
+  }
+
+  header {
+    position: static;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  header nav {
+    flex: none;
+    width: 100%;
+  }
+
+  main {
+    /* Full window height, so the divider runs top to bottom on short pages. */
+    min-height: calc(100vh - 4rem);
+    padding: 0 0 2rem 2rem;
+    border-left: 1px solid var(--rule);
+  }
+
+  main > :first-child {
+    margin-top: 0;
+  }
 }
