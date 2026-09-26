@@ -37,14 +37,29 @@
   color-scheme: light dark;
 }
 
+/* Dark follows the system unless the toggle (scripts/theme.ts) has set
+   <html data-theme>. The two dark blocks must stay in sync. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #161615;
     --fg: #e6e4de;
     --muted: #9a988f;
     --rule: #33322f;
     --link: #8fb4ea;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #161615;
+  --fg: #e6e4de;
+  --muted: #9a988f;
+  --rule: #33322f;
+  --link: #8fb4ea;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 *,
@@ -91,6 +106,85 @@ a {
 
 main:focus {
   outline: none;
+}
+
+/* Light/dark toggle, top right. Unhidden by scripts/theme.ts. It shows the
+   mode it switches to: a moon in light mode, a sun in dark. */
+.theme-toggle {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.theme-toggle[hidden] {
+  display: none;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  color: var(--link);
+  border-color: var(--link);
+  outline: none;
+}
+
+.theme-toggle svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-toggle .sun {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .sun {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-toggle .moon {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle .sun {
+    display: block;
+  }
+
+  :root:not([data-theme="light"]) .theme-toggle .moon {
+    display: none;
+  }
+}
+
+/* Where the page (not just the content) is tall enough to scroll under a
+   pinned header, keep the toggle pinned too. On phones it scrolls away. */
+@media (min-height: 640px) and (min-width: 600px) {
+  .theme-toggle {
+    position: fixed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle {
+    transition: none;
+  }
 }
 
 /* Read out by screen readers, but not shown. */
