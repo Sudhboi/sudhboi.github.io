@@ -27,13 +27,15 @@
   font-display: swap;
 }
 
+/* Catppuccin: Latte for light, Macchiato for dark (catppuccin.com/palette).
+   Light --muted is subtext1, not subtext0, which is under 4.5:1 on Latte. */
 :root {
   --font: "Iosevka Term", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --bg: #fbfaf7;
-  --fg: #1d1d1b;
-  --muted: #6b6a66;
-  --rule: #dddbd4;
-  --link: #2f5d9e;
+  --bg: #eff1f5; /* base */
+  --fg: #4c4f69; /* text */
+  --muted: #5c5f77; /* subtext1 */
+  --rule: #ccd0da; /* surface0 */
+  --link: #1e66f5; /* blue */
   color-scheme: light dark;
 }
 
@@ -41,20 +43,20 @@
    <html data-theme>. The two dark blocks must stay in sync. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #161615;
-    --fg: #e6e4de;
-    --muted: #9a988f;
-    --rule: #33322f;
-    --link: #8fb4ea;
+    --bg: #24273a; /* base */
+    --fg: #cad3f5; /* text */
+    --muted: #a5adcb; /* subtext0 */
+    --rule: #363a4f; /* surface0 */
+    --link: #8aadf4; /* blue */
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #161615;
-  --fg: #e6e4de;
-  --muted: #9a988f;
-  --rule: #33322f;
-  --link: #8fb4ea;
+  --bg: #24273a; /* base */
+  --fg: #cad3f5; /* text */
+  --muted: #a5adcb; /* subtext0 */
+  --rule: #363a4f; /* surface0 */
+  --link: #8aadf4; /* blue */
   color-scheme: dark;
 }
 
