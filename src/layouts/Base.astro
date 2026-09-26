@@ -46,19 +46,16 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
     </button>
     <div class="sidebar">
       <header>
-        <a
-          class="logo"
-          href="/"
-          aria-current={page === "home" ? "page" : undefined}
-          ><span class="abs" aria-hidden="true">(λx.</span>Sudhir Krisna<span
-            class="abs"
-            aria-hidden="true">)</span
-          ></a
-        >
-        <NavDiagram page={page} />
-      </header>
-      <footer>
-        <div class="footer-row">
+        <div class="identity">
+          <a
+            class="logo"
+            href="/"
+            aria-current={page === "home" ? "page" : undefined}
+            ><span class="abs" aria-hidden="true">(λx.</span>Sudhir Krisna<span
+              class="abs"
+              aria-hidden="true">)</span
+            ></a
+          >
           <ul class="elsewhere" aria-label="Elsewhere">
             <li>
               <a href="https://github.com/Sudhboi">
@@ -81,8 +78,11 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
               </a>
             </li>
           </ul>
-          <p>Built with Astro.*</p>
         </div>
+        <NavDiagram page={page} />
+      </header>
+      <footer>
+        <p>Built with Astro.*</p>
         <p class="keys-hint" hidden>
           Press <kbd>?</kbd> for keyboard shortcuts.
         </p>
