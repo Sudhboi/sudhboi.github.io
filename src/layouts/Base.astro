@@ -36,6 +36,12 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
     <main>
       <slot />
     </main>
-    <footer>Built with Astro.</footer>
+    <footer>
+      <p>Built with Astro.*</p>
+      <p class="footnote">
+        * Built with LLM assistance, owing to the author's steadfast refusal to
+        write a single line of JavaScript.
+      </p>
+    </footer>
   </body>
 </html>
