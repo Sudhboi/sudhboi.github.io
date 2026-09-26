@@ -276,9 +276,12 @@ footer {
     grid-template-columns: 30rem minmax(0, 72ch);
     justify-content: center;
     max-width: none;
+    /* The single grid row fills the window, so short content can centre in it. */
+    min-height: 100vh;
     padding: 2rem 1.5rem;
   }
 
+  /* A window-height sticky box whose contents sit in its vertical centre. */
   .sidebar {
     display: flex;
     flex-direction: column;
@@ -286,9 +289,19 @@ footer {
     position: sticky;
     top: 2rem;
     align-self: start;
-    max-height: calc(100vh - 4rem);
+    height: calc(100vh - 4rem);
     overflow-y: auto;
     padding-right: 2rem;
+  }
+
+  /* Centre with auto margins rather than justify-content, so the top stays
+     reachable if the sidebar ever overflows. */
+  .sidebar > :first-child {
+    margin-top: auto;
+  }
+
+  .sidebar > :last-child {
+    margin-bottom: auto;
   }
 
   header {
@@ -305,14 +318,19 @@ footer {
     width: 100%;
   }
 
+  /* Short content is centred, and the divider spans just the content. Long
+     content starts at the top and scrolls. */
   main {
-    /* Full window height, so the divider runs top to bottom on short pages. */
-    min-height: calc(100vh - 4rem);
-    padding: 0 0 2rem 2rem;
+    align-self: center;
+    padding: 0 0 0 2rem;
     border-left: 1px solid var(--rule);
   }
 
   main > :first-child {
     margin-top: 0;
+  }
+
+  main > :last-child {
+    margin-bottom: 0;
   }
 }
