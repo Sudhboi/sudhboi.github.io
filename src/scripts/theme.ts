@@ -33,9 +33,17 @@ function set(theme: Theme) {
   label();
 }
 
-button?.addEventListener("click", () =>
-  set(current() === "dark" ? "light" : "dark"),
-);
+// Cross-fade the whole page where view transitions exist; otherwise, or
+// with reduced motion, switch instantly.
+const still = matchMedia("(prefers-reduced-motion: reduce)");
+
+function toggle() {
+  const next: Theme = current() === "dark" ? "light" : "dark";
+  if (!("startViewTransition" in document) || still.matches) return set(next);
+  document.startViewTransition(() => set(next));
+}
+
+button?.addEventListener("click", toggle);
 system.addEventListener("change", label);
 
 label();
