@@ -105,7 +105,7 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     class="diagram"
     viewBox={viewBox}
     role="group"
-    style={`--w: ${f(maxX - minX)}px`}
+    style={`--w: ${f(maxX - minX)}px; aspect-ratio: ${f(maxX - minX)} / ${f(maxY - minY)}`}
   >
     <defs>
       <marker
@@ -201,7 +201,6 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
 
 <style>
   nav {
-    flex: 1 1 20rem;
     display: flex;
     justify-content: center;
   }
