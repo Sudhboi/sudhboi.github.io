@@ -51,6 +51,8 @@ const edges = arrows.map(([a, b, why]) => {
   const s = toEdge(a, u);
   const e = toEdge(b, u);
   return {
+    from: a,
+    to: b,
     x1: A.x + u.x * s,
     y1: A.y + u.y * s,
     x2: B.x - u.x * e,
@@ -167,7 +169,12 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
 
     {
       edges.map((e) => (
-        <g class="arrow" data-reached-by={e.reachedBy}>
+        <g
+          class="arrow"
+          data-reached-by={e.reachedBy}
+          data-from={e.from}
+          data-to={e.to}
+        >
           <title>{e.title}</title>
           <line class="hover" x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} />
           <line

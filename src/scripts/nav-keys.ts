@@ -7,6 +7,8 @@
 //   t         toggle light / dark (scripts/theme.ts)
 //   ?         show or hide the cheatsheet
 
+import { travelTo } from "./travel";
+
 type Dir = "h" | "j" | "k" | "l";
 const STEP: Record<Dir, readonly [number, number]> = {
   h: [-1, 0],
@@ -91,7 +93,7 @@ document.addEventListener("keydown", (e) => {
   if (pendingG && e.key === "h") {
     pendingG = 0;
     e.preventDefault();
-    return location.assign("/");
+    return travelTo("home");
   }
   window.clearTimeout(pendingG);
   pendingG = 0;

@@ -194,6 +194,48 @@ main:focus {
   }
 }
 
+/* Travelling between pages along the diagram (scripts/travel.ts): a
+   full-window copy of the diagram that the camera pans across. While a trip
+   is pending, only the stage shows. */
+html[data-travel] body > :not(.travel-stage) {
+  visibility: hidden;
+}
+
+.travel-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.travel-stage .backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+}
+
+.travel-stage .diagram {
+  position: absolute;
+  margin: 0;
+  max-width: none;
+  transform-origin: 0 0;
+}
+
+.travel-stage .obj.here text {
+  fill: var(--fg);
+  font-weight: 700;
+}
+
+.travel-stage .arrow.lit .stroke {
+  stroke: var(--fg);
+  marker-end: url(#travel-nav-head-on);
+}
+
+.travel-stage .dot {
+  fill: var(--fg);
+}
+
 /* Read out by screen readers, but not shown. */
 .visually-hidden {
   position: absolute;

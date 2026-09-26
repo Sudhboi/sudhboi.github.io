@@ -30,6 +30,22 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
         if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
       } catch {}
     </script>
+    <!-- Hide the page until a pending trip along the diagram has played
+         (see scripts/travel.ts). Never for more than two seconds. -->
+    <script is:inline>
+      try {
+        const trip = JSON.parse(sessionStorage.getItem("travel") ?? "null");
+        const nav = performance.getEntriesByType("navigation")[0];
+        const arriving =
+          (trip && trip.href === location.pathname && Date.now() - trip.t < 5000) ||
+          (nav && nav.type === "back_forward" && sessionStorage.getItem("shown"));
+        if (arriving && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          const root = document.documentElement;
+          root.dataset.travel = "";
+          setTimeout(() => delete root.dataset.travel, 2000);
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <a class="skip" href="#content">Skip to content</a>
@@ -119,6 +135,7 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
       import "../scripts/nav-keys";
       import "../scripts/trail";
       import "../scripts/theme";
+      import "../scripts/travel";
     </script>
   </body>
 </html>
