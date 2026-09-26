@@ -42,4 +42,4 @@ page: experience
 <p class="meta">University of New Brunswick, Fredericton · September 2025 – present</p>
 
 Bachelor's in Computer Science, Faculty of Computer Science co-op program.
-CGPA 4.3.
+CGPA 4.3; Dean's List 2025–2026.
