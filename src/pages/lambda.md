@@ -1,6 +1,8 @@
 ---
 layout: ../layouts/Base.astro
 page: lambda
+# A stub until the interpreter exists.
+noindex: true
 ---
 
 # Lambda calculus
