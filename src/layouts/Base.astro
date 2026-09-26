@@ -1,0 +1,52 @@
+---
+import "../styles/global.css";
+import { meta, navFor, type Page } from "../category";
+
+// Used directly (props) or as a Markdown layout (frontmatter).
+const props = Astro.props.frontmatter ?? Astro.props;
+const page: Page | undefined = props.page;
+const title: string = props.title ?? (page ? meta[page].title : "");
+const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{docTitle}</title>
+    <link
+      rel="preload"
+      href="/fonts/IosevkaTerm-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body>
+    <header>
+      <a
+        class="logo"
+        href="/"
+        aria-current={page === "home" ? "page" : undefined}>Sudhir Krisna</a
+      >
+      {
+        page && (
+          <nav>
+            {navFor(page).map((q) =>
+              q === page ? (
+                <span aria-current="page">{meta[q].title}</span>
+              ) : (
+                <a href={meta[q].href}>{meta[q].title}</a>
+              ),
+            )}
+          </nav>
+        )
+      }
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>Built with Astro.</footer>
+  </body>
+</html>
