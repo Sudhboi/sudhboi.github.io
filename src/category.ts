@@ -62,12 +62,12 @@ export type Loop = "up" | "down" | "left" | "right";
 export const layout: Record<Page, { at: readonly [number, number]; loop: Loop }> =
   {
     home: { at: [1, 0], loop: "up" },
-    experience: { at: [0, 1], loop: "left" },
+    experience: { at: [0, 0], loop: "up" },
+    about: { at: [2, 0], loop: "up" },
+    notes: { at: [3, 0], loop: "up" },
+    freegroups: { at: [0, 1], loop: "down" },
     projects: { at: [1, 1], loop: "down" },
-    about: { at: [2, 1], loop: "right" },
-    freegroups: { at: [0.5, 2], loop: "down" },
-    lambda: { at: [1.5, 2], loop: "down" },
-    notes: { at: [2.5, 2], loop: "down" },
+    lambda: { at: [2, 1], loop: "down" },
   };
 
 const successors = (p: Page) =>

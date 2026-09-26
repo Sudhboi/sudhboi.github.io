@@ -6,7 +6,6 @@ import {
   layout,
   meta,
   pages,
-  pushouts,
   type Loop,
   type Page,
 } from "../category";
@@ -82,18 +81,6 @@ const loop = (p: Page) => {
   };
 };
 
-// The pushout corner: a small ⌟ nested inside the square at its pushout,
-// its arms parallel to the two arrows coming in.
-const corners = pushouts.map(({ legs: [a, b], pushout }) => {
-  const P = pos(pushout);
-  const ua = unit(P, pos(a));
-  const ub = unit(P, pos(b));
-  const mid = unit({ x: 0, y: 0 }, { x: ua.x + ub.x, y: ua.y + ub.y });
-  const v = { x: P.x + mid.x * 30, y: P.y + mid.y * 30 };
-  const arm = 7;
-  return `M ${f(v.x + ua.x * arm)} ${f(v.y + ua.y * arm)} L ${f(v.x)} ${f(v.y)} L ${f(v.x + ub.x * arm)} ${f(v.y + ub.y * arm)}`;
-});
-
 // Bounds cover every node and every page's identity loop, so the diagram is
 // the same size on every page.
 const extents: Pt[] = pages.flatMap((p) => {
@@ -159,14 +146,6 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
             marker-end="url(#nav-head)"
           />
         </g>
-      ))
-    }
-
-    {
-      corners.map((d) => (
-        <path class="corner" d={d}>
-          <title>pushout</title>
-        </path>
       ))
     }
 
@@ -262,14 +241,6 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     fill: none;
     stroke: var(--muted);
     stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .corner {
-    fill: none;
-    stroke: var(--muted);
-    stroke-width: 1;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
