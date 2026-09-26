@@ -2,6 +2,8 @@ import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import type { AstroIntegration } from "astro";
 import { diagramProblems } from "./src/category";
+import { satteri } from "@astrojs/markdown-satteri";
+import { codeKinds } from "./src/code-kinds";
 
 const navCategory: AstroIntegration = {
   name: "nav-category",
@@ -19,6 +21,7 @@ const navCategory: AstroIntegration = {
 
 export default defineConfig({
   site: "https://www.sudhirkrisna.com",
+  markdown: { processor: satteri({ hastPlugins: [codeKinds] }) },
   integrations: [
     navCategory,
     // Pages with `noindex: true` in their frontmatter are left out here too.

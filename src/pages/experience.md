@@ -9,24 +9,24 @@ page: experience
 
 <p class="meta">Department of Mathematics, UNB · with Dr. Nicholas Touikan · May 2026 – present</p>
 
-- Developing [free_groups_26](/free-groups/), an open-source, typed Python
+- Developing [free_groups_26](/free-groups/), an open-source, typed `Python`
   module for investigating and manipulating free groups in research,
-  documented with Sphinx.
+  documented with `Sphinx`.
 - Implemented algorithms such as Whitehead minimization and automorphic orbit
-  search using numpy, networkx, sortedcontainers and scipy, with matplotlib
-  for visualizations.
-- Set up an isolated, reproducible environment with Nix devenv, published the
-  package to PyPI, and built a CI/CD pipeline with GitHub Actions: pytest and
-  doctests, plus automatic documentation updates.
+  search using `numpy`, `networkx`, `sortedcontainers` and `scipy`, with
+  `matplotlib` for visualizations.
+- Set up an isolated, reproducible environment with `Nix` `devenv`, published
+  the package to `PyPI`, and built a CI/CD pipeline with `GitHub Actions`:
+  `pytest` and doctests, plus automatic documentation updates.
 
 ## Teaching Assistant
 
 <p class="meta">Faculty of Computer Science, UNB · September 2026 – present</p>
 
 - Tutoring and hands-on lab support for students in the foundation courses:
-  introductory Java programming, database management, discrete structures, and
+  introductory `Java` programming, database management, discrete structures, and
   an overview of computer science.
-- Built a MySQL database, with a simple data-entry interface, to track session
+- Built a `MySQL` database, with a simple data-entry interface, to track session
   attendance.
 
 ## Charity Representative

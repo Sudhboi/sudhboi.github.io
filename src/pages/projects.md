@@ -9,7 +9,7 @@ page: projects
 
 <p class="meta">May 2026 – present</p>
 
-A typed Python module for computing with free groups: Whitehead minimization,
+A typed `Python` module for computing with free groups: Whitehead minimization,
 automorphic orbit search, and visualizations. Built for research in the
 Department of Mathematics at UNB.
 
@@ -17,29 +17,29 @@ Department of Mathematics at UNB.
 
 <p class="meta">August 2026</p>
 
-- A terminal text editor built on vty around a pure functional core, with
+- A terminal text editor built on `vty` around a pure functional core, with
   rendering, input handling and editor state in separate modules that are
   tested independently.
 - Editor state (cursor, buffer, viewport) is an immutable record updated
-  through lenses generated with Template Haskell, rather than by hand,
+  through lenses generated with `Template Haskell`, rather than by hand,
   field by field.
 
 ## [NixOS configuration](https://github.com/Sudhboi/nixos-public)
 
 <p class="meta">January 2026 – present</p>
 
-- Modular, declarative NixOS configurations deployed across several machines,
-  using flakes and Home Manager to reproduce system configuration, user
+- Modular, declarative `NixOS` configurations deployed across several machines,
+  using flakes and `Home Manager` to reproduce system configuration, user
   environments and applications.
-- Custom Nix derivations for packages missing from nixpkgs, from build inputs
+- Custom `Nix` derivations for packages missing from `nixpkgs`, from build inputs
   and compilation steps to installation.
 
 ## Neural network from first principles
 
 <p class="meta">May 2026</p>
 
-- A configurable multilayer perceptron in Python, with nothing but numpy for
-  the matrix arithmetic.
+- A configurable multilayer perceptron in `Python`, with nothing but `numpy`
+  for the matrix arithmetic.
 - Forward propagation, backpropagation, activation functions and their
   derivatives, and layer-wise gradients, all derived by hand, trained with
   gradient descent.

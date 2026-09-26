@@ -11,12 +11,13 @@ research, functional programming, type theory, and reproducibility.
 
 ## Skills
 
-- **Languages:** Python, Haskell, C, Java, Lean 4
-- **Tools:** Linux, Nix (and devenv), Git, GitHub and GitHub Actions,
-  Cabal and Stack
-- **Python libraries:** numpy, matplotlib, scipy, networkx, graph-tool, pytorch
-- **Databases:** MariaDB, MySQL
+- **Languages:** `Python`, `Haskell`, `C`, `Java`, `Lean 4`
+- **Tools:** `Linux`, `Nix` (and `devenv`), `Git`, `GitHub` and `GitHub Actions`,
+  `Cabal` and `Stack`
+- **`Python` libraries:** `numpy`, `matplotlib`, `scipy`, `networkx`, `graph-tool`,
+  `pytorch`
+- **Databases:** `MariaDB`, `MySQL`
 
 ## Outside of code
 
-Video games, competitive mathematics, and Ricing on Linux.
+Video games, competitive mathematics, and Ricing on `Linux`.
