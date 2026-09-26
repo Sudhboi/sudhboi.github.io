@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- λ from Iosevka Term Bold (as in the header), on the site's background.
+       Colours are the bg and fg tokens from global.css. -->
+  <style>
+    rect { fill: #fbfaf7; }
+    path { fill: #1d1d1b; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #161615; }
+      path { fill: #e6e4de; }
+    }
+  </style>
+  <rect width="64" height="64" rx="12" />
+  <path
+    transform="translate(32 32) scale(0.064 -0.064) translate(-250 -367.5)"
+    d="M47 0 194 523 176 590Q166 626 156.0 662.5Q146 699 135 735H250L453 0H338L253 381L162 0Z"
+  />
+</svg>
