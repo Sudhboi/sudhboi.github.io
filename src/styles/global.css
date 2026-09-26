@@ -125,6 +125,7 @@ header nav {
 .logo {
   /* Room for the expanded "(λx.Sudhir Krisna)", so the nav doesn't shift. */
   min-width: 18ch;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--fg);
   text-decoration: none;
@@ -329,7 +330,8 @@ footer {
     position: static;
     flex-direction: column;
     align-items: flex-start;
-    gap: 1.5rem;
+    /* The diagram's top already reserves room for the identity loop. */
+    gap: 0;
     padding: 0;
     border-bottom: none;
   }
