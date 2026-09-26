@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
-import { meta, navFor, type Page } from "../category";
+import NavDiagram from "../components/NavDiagram.astro";
+import { meta, type Page } from "../category";
 
 // Used directly (props) or as a Markdown layout (frontmatter).
 const props = Astro.props.frontmatter ?? Astro.props;
@@ -30,19 +31,7 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
         href="/"
         aria-current={page === "home" ? "page" : undefined}>Sudhir Krisna</a
       >
-      {
-        page && (
-          <nav>
-            {navFor(page).map((q) =>
-              q === page ? (
-                <span aria-current="page">{meta[q].title}</span>
-              ) : (
-                <a href={meta[q].href}>{meta[q].title}</a>
-              ),
-            )}
-          </nav>
-        )
-      }
+      <NavDiagram page={page} />
     </header>
     <main>
       <slot />

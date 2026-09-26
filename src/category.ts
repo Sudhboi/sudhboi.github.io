@@ -1,8 +1,12 @@
 // The site as a category.
 //
-// Objects are pages; morphisms are navigation links. Identities are implicit
-// (the logo on Home is the drawn one). `astro.config.ts` refuses to build
-// unless `arrows` is closed under composition.
+// Objects are pages; the arrows below generate the morphisms, and composites
+// (e.g. home -> projects -> lambda) exist implicitly. The category is thin —
+// at most one morphism between any two pages — so every diagram commutes:
+// home -> projects -> lambda = home -> about -> lambda.
+//
+// `astro.config.ts` refuses to build unless the generators really do present
+// a thin category (no cycles) with Home as its initial object.
 
 export const pages = ["home", "projects", "lambda", "notes", "about"] as const;
 export type Page = (typeof pages)[number];
@@ -15,38 +19,61 @@ export const meta: Record<Page, { title: string; href: string }> = {
   about: { title: "About", href: "/about/" },
 };
 
-export const sections = pages.filter((p) => p !== "home");
-
 type Arrow = readonly [from: Page, to: Page];
 
-// Every navigation link on the site.
+// Generating arrows, as drawn in the nav diagram.
 export const arrows: Arrow[] = [
-  // Home is the table of contents.
-  ...sections.map((p): Arrow => ["home", p]),
-  // The logo always leads Home.
-  ...sections.map((p): Arrow => [p, "home"]),
-  // Forced by composition: p -> home -> q means p must link q directly.
-  ...sections.flatMap((p) =>
-    sections.filter((q) => q !== p).map((q): Arrow => [p, q]),
-  ),
+  ["home", "projects"],
+  ["home", "about"],
+  ["projects", "lambda"],
+  ["projects", "notes"],
+  ["about", "lambda"],
 ];
 
-const key = ([a, b]: Arrow) => `${a}->${b}`;
+// Grid position of each object in the nav diagram: [column, row].
+//
+//   Home ───→ Projects ───→ Notes
+//    │           │
+//    ↓           ↓
+//   About ───→ Lambda
+export const layout: Record<Page, readonly [col: number, row: number]> = {
+  home: [0, 0],
+  projects: [1, 0],
+  notes: [2, 0],
+  about: [0, 1],
+  lambda: [1, 1],
+};
 
-// Composites a -> b -> c whose direct arrow a -> c is missing.
-export function missingComposites(as: readonly Arrow[]): string[] {
-  const present = new Set(as.map(key));
-  const missing = new Set<string>();
-  for (const [a, b] of as)
-    for (const [b2, c] of as)
-      if (b === b2 && a !== c && !present.has(key([a, c])))
-        missing.add(key([a, c]));
-  return [...missing].sort();
+const successors = (p: Page) =>
+  arrows.filter(([a]) => a === p).map(([, b]) => b);
+
+// Everything wrong with the diagram as a presentation of a thin category
+// with initial object Home; empty when all is well.
+export function diagramProblems(): string[] {
+  const problems: string[] = [];
+
+  // Acyclic: otherwise two distinct pages would be isomorphic.
+  const state = new Map<Page, "visiting" | "done">();
+  const visit = (p: Page, path: Page[]) => {
+    if (state.get(p) === "done") return;
+    if (state.get(p) === "visiting") {
+      problems.push(`cycle: ${[...path, p].join(" -> ")}`);
+      return;
+    }
+    state.set(p, "visiting");
+    for (const q of successors(p)) visit(q, [...path, p]);
+    state.set(p, "done");
+  };
+  for (const p of pages) visit(p, []);
+
+  // Initial: Home has a (necessarily unique) morphism to every page.
+  const reached = new Set<Page>(["home"]);
+  const queue: Page[] = ["home"];
+  while (queue.length > 0)
+    for (const q of successors(queue.shift()!))
+      if (!reached.has(q)) reached.add(q), queue.push(q);
+  for (const p of pages)
+    if (!reached.has(p)) problems.push(`no morphism home -> ${p}`);
+
+  return problems;
 }
-
-export const hasArrow = (from: Page, to: Page) =>
-  arrows.some(([a, b]) => a === from && b === to);
-
-// Header nav: each section the page has an arrow to, plus the page itself.
-export const navFor = (page: Page) =>
-  sections.filter((q) => q === page || hasArrow(page, q));
