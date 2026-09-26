@@ -4,6 +4,7 @@
 import {
   arrows,
   layout,
+  leq,
   meta,
   pages,
   type Loop,
@@ -55,8 +56,28 @@ const edges = arrows.map(([a, b, why]) => {
     x2: B.x - u.x * e,
     y2: B.y - u.y * e,
     title: `${meta[a].title} → ${meta[b].title}: ${why}`,
+    // Every page whose up-set contains this arrow.
+    reachedBy: pages.filter((q) => leq(q, a)).join(" "),
   };
 });
+
+// Every page with a (non-identity) morphism to p.
+const reachedBy = (p: Page) =>
+  pages.filter((q) => q !== p && leq(q, p)).join(" ");
+
+// Pointing at a page lights up everything it reaches: the arrows and objects
+// of its up-set. One rule per page, generated here because the selectors
+// depend on the category.
+const reachCss = pages
+  .map((p) => {
+    const on = `.diagram:has([data-page="${p}"]:is(:hover, :focus-visible))`;
+    return (
+      `${on} .arrow[data-reached-by~="${p}"] .stroke` +
+      `{stroke:var(--fg);marker-end:url(#nav-head-on)}` +
+      `${on} .obj[data-reached-by~="${p}"] text{fill:var(--fg)}`
+    );
+  })
+  .join("");
 
 // The identity loop leaves and re-enters a node on its free side.
 const DIRS: Record<Loop, Pt> = {
@@ -100,13 +121,14 @@ const maxY = Math.max(...extents.map((p) => p.y)) + 2;
 const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
 ---
 
-<nav aria-label="Site">
+<nav aria-label="Site" data-page={page}>
   <svg
     class="diagram"
     viewBox={viewBox}
     role="group"
     style={`--w: ${f(maxX - minX)}px; aspect-ratio: ${f(maxX - minX)} / ${f(maxY - minY)}`}
   >
+    <style is:inline set:html={reachCss} />
     <defs>
       <marker
         id="nav-head"
@@ -130,11 +152,22 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
       >
         <path class="head head-id" d="M 1 1 L 9 5 L 1 9"></path>
       </marker>
+      <marker
+        id="nav-head-on"
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path class="head head-on" d="M 1 1 L 9 5 L 1 9"></path>
+      </marker>
     </defs>
 
     {
       edges.map((e) => (
-        <g class="arrow">
+        <g class="arrow" data-reached-by={e.reachedBy}>
           <title>{e.title}</title>
           <line class="hover" x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} />
           <line
@@ -152,6 +185,13 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     {
       pages.map((p) => {
         const { x, y } = pos(p);
+        // Hooks for the reachability rules and the keyboard shortcuts.
+        const data = {
+          "data-page": p,
+          "data-reached-by": reachedBy(p),
+          "data-col": layout[p].at[0],
+          "data-row": layout[p].at[1],
+        };
         const box = (
           <rect
             class="hit"
@@ -168,7 +208,7 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
         );
         if (p !== page)
           return (
-            <a class="obj" href={meta[p].href}>
+            <a class="obj" href={meta[p].href} {...data}>
               {box}
               {label}
             </a>
@@ -180,6 +220,7 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
             tabindex="0"
             aria-current="page"
             aria-label={`${meta[p].title} (current page)`}
+            {...data}
           >
             <path
               class="id"
@@ -197,12 +238,22 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
       })
     }
   </svg>
+  <p class="trail" hidden></p>
 </nav>
 
 <style>
   nav {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* The composite of the arrows followed to get here; see scripts/trail.ts. */
+  .trail {
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
   }
 
   .diagram {
@@ -294,6 +345,10 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
 
   .head-id {
     stroke: var(--link);
+  }
+
+  .head-on {
+    stroke: var(--fg);
   }
 
   .current text.id-label {

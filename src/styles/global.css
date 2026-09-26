@@ -284,6 +284,69 @@ footer p {
   font-style: italic;
 }
 
+kbd {
+  padding: 0 0.3em;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 0.9em;
+}
+
+/* Unhidden by scripts/nav-keys.ts; pointless without a keyboard. */
+@media (hover: none) {
+  .keys-hint {
+    display: none;
+  }
+}
+
+/* The keyboard-shortcut cheatsheet, opened with "?". */
+dialog.keys {
+  max-width: min(28rem, calc(100vw - 2rem));
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+dialog.keys::backdrop {
+  background: rgb(0 0 0 / 0.35);
+}
+
+dialog.keys h2 {
+  margin: 0 0 1rem;
+}
+
+dialog.keys dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1.25rem;
+  margin: 0 0 1rem;
+}
+
+dialog.keys dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+dialog.keys button {
+  padding: 0.3em 0.9em;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Close takes focus when the dialog opens; the link-coloured border is its
+   focus ring, in place of the browser's heavier one. */
+dialog.keys button:hover,
+dialog.keys button:focus-visible {
+  color: var(--link);
+  border-color: var(--link);
+  outline: none;
+}
+
 /* Header and footer share a wrapper so they can form the wide-screen sidebar.
    Elsewhere it dissolves, and the footer goes back below the content. */
 body {

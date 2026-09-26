@@ -65,6 +65,9 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
           </ul>
           <p>Built with Astro.*</p>
         </div>
+        <p class="keys-hint" hidden>
+          Press <kbd>?</kbd> for keyboard shortcuts.
+        </p>
         <p class="footnote">
           * Built with LLM assistance; I refuse to write a single line of
           JavaScript.
@@ -74,5 +77,27 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
     <main id="content" tabindex="-1">
       <slot />
     </main>
+    <dialog class="keys" aria-labelledby="keys-title">
+      <h2 id="keys-title">Keyboard shortcuts</h2>
+      <dl>
+        <dt><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd></dt>
+        <dd>move around the diagram</dd>
+        <dt><kbd>Enter</kbd></dt>
+        <dd>follow the arrow to that page</dd>
+        <dt><kbd>g</kbd> <kbd>h</kbd></dt>
+        <dd>go home</dd>
+        <dt><kbd>H</kbd> <kbd>L</kbd></dt>
+        <dd>back / forward</dd>
+        <dt><kbd>?</kbd></dt>
+        <dd>show or hide this list</dd>
+      </dl>
+      <form method="dialog">
+        <button>Close</button>
+      </form>
+    </dialog>
+    <script>
+      import "../scripts/nav-keys";
+      import "../scripts/trail";
+    </script>
   </body>
 </html>

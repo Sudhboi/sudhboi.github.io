@@ -62,7 +62,7 @@ const successors = (p: Page) =>
   arrows.filter(([a]) => a === p).map(([, b]) => b);
 
 // Everything reachable from p, including p itself (its identity).
-function above(p: Page): Set<Page> {
+export function above(p: Page): Set<Page> {
   const seen = new Set<Page>([p]);
   const queue = [p];
   while (queue.length > 0)
@@ -71,7 +71,8 @@ function above(p: Page): Set<Page> {
   return seen;
 }
 
-const leq = (a: Page, b: Page) => above(a).has(b);
+// Whether there is a morphism a -> b.
+export const leq = (a: Page, b: Page) => above(a).has(b);
 
 // Everything wrong with the diagram; empty when all is well.
 export function diagramProblems(): string[] {
