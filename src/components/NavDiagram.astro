@@ -1,69 +1,116 @@
 ---
 // The site's navigation, drawn as the commutative diagram of its category.
 // Geometry is computed at build time; the output is a static SVG.
-import { arrows, layout, meta, pages, type Page } from "../category";
+import {
+  arrows,
+  layout,
+  meta,
+  pages,
+  pushouts,
+  type Loop,
+  type Page,
+} from "../category";
 
 interface Props {
   page?: Page;
 }
 const { page } = Astro.props;
 
-const COL = 150; // horizontal distance between columns
+const COL = 140; // horizontal distance between columns
 const ROW = 76; // vertical distance between rows
 const FONT = 16;
 const CHAR = FONT / 2; // Iosevka's advance width is exactly 0.5em
 const PAD_X = 8; // gap between a label and an arrow touching its side
 const HALF_H = 12; // half the height of a node's box
 const GAP = 3; // extra breathing room at each end of an arrow
-const LOOP = 40; // bézier control-point offset of the identity loop
+const LOOP = 36; // bézier control-point offset of the identity loop
 
-const pos = (p: Page) => ({ x: layout[p][0] * COL, y: layout[p][1] * ROW });
+type Pt = { x: number; y: number };
+const pos = (p: Page): Pt => ({
+  x: layout[p].at[0] * COL,
+  y: layout[p].at[1] * ROW,
+});
 const halfW = (p: Page) => (meta[p].title.length * CHAR) / 2 + PAD_X;
+const unit = (a: Pt, b: Pt): Pt => {
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  return { x: (b.x - a.x) / len, y: (b.y - a.y) / len };
+};
+const f = (n: number) => n.toFixed(1);
 
-// Distance from a box's centre to its edge along the unit vector (ux, uy).
-const toEdge = (p: Page, ux: number, uy: number) =>
+// Distance from a box's centre to its edge along the unit vector u.
+const toEdge = (p: Page, u: Pt) =>
   Math.min(
-    ux === 0 ? Infinity : halfW(p) / Math.abs(ux),
-    uy === 0 ? Infinity : HALF_H / Math.abs(uy),
+    u.x === 0 ? Infinity : halfW(p) / Math.abs(u.x),
+    u.y === 0 ? Infinity : HALF_H / Math.abs(u.y),
   ) + GAP;
 
-const edges = arrows.map(([a, b]) => {
+const edges = arrows.map(([a, b, why]) => {
   const A = pos(a);
   const B = pos(b);
-  const len = Math.hypot(B.x - A.x, B.y - A.y);
-  const ux = (B.x - A.x) / len;
-  const uy = (B.y - A.y) / len;
-  const s = toEdge(a, ux, uy);
-  const e = toEdge(b, ux, uy);
+  const u = unit(A, B);
+  const s = toEdge(a, u);
+  const e = toEdge(b, u);
   return {
-    from: a,
-    to: b,
-    x1: A.x + ux * s,
-    y1: A.y + uy * s,
-    x2: B.x - ux * e,
-    y2: B.y - uy * e,
+    x1: A.x + u.x * s,
+    y1: A.y + u.y * s,
+    x2: B.x - u.x * e,
+    y2: B.y - u.y * e,
+    title: `${meta[a].title} → ${meta[b].title}: ${why}`,
   };
 });
 
-// Identity loops open away from the diagram: up on the top row, down below.
-const maxRow = Math.max(...pages.map((p) => layout[p][1]));
+// The identity loop leaves and re-enters a node on its free side.
+const DIRS: Record<Loop, Pt> = {
+  up: { x: 0, y: -1 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
+};
 const loop = (p: Page) => {
-  const { x, y } = pos(p);
-  const s = layout[p][1] === maxRow && maxRow > 0 ? 1 : -1;
-  const y0 = y + s * HALF_H;
+  const c = pos(p);
+  const d = DIRS[layout[p].loop];
+  const n = { x: -d.y, y: d.x }; // perpendicular to d
+  const edge = d.x === 0 ? HALF_H : halfW(p);
+  const at = (along: number, across: number) => ({
+    x: c.x + d.x * (edge + along) + n.x * across,
+    y: c.y + d.y * (edge + along) + n.y * across,
+  });
+  const [s, c1, c2, e] = [at(0, -7), at(LOOP, -21), at(LOOP, 21), at(0, 7)];
   return {
-    d: `M ${x - 7} ${y0} C ${x - 26} ${y0 + s * LOOP}, ${x + 26} ${y0 + s * LOOP}, ${x + 7} ${y0}`,
-    labelY: y0 + s * (LOOP * 0.75 + 10),
+    d: `M ${f(s.x)} ${f(s.y)} C ${f(c1.x)} ${f(c1.y)}, ${f(c2.x)} ${f(c2.y)}, ${f(e.x)} ${f(e.y)}`,
+    label: at(LOOP * 0.75 + (d.x === 0 ? 10 : 14), 0),
   };
 };
 
-// Room for an identity loop and its label above and below the diagram.
-const MARGIN_Y = HALF_H + LOOP * 0.75 + 18;
-const minX = Math.min(...pages.map((p) => pos(p).x - halfW(p))) - 4;
-const maxX = Math.max(...pages.map((p) => pos(p).x + halfW(p))) + 4;
-const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
-  .map((n) => n.toFixed(1))
-  .join(" ");
+// The pushout corner: a small ⌟ nested inside the square at its pushout,
+// its arms parallel to the two arrows coming in.
+const corners = pushouts.map(({ legs: [a, b], pushout }) => {
+  const P = pos(pushout);
+  const ua = unit(P, pos(a));
+  const ub = unit(P, pos(b));
+  const mid = unit({ x: 0, y: 0 }, { x: ua.x + ub.x, y: ua.y + ub.y });
+  const v = { x: P.x + mid.x * 30, y: P.y + mid.y * 30 };
+  const arm = 7;
+  return `M ${f(v.x + ua.x * arm)} ${f(v.y + ua.y * arm)} L ${f(v.x)} ${f(v.y)} L ${f(v.x + ub.x * arm)} ${f(v.y + ub.y * arm)}`;
+});
+
+// Bounds cover every node and every page's identity loop, so the diagram is
+// the same size on every page.
+const extents: Pt[] = pages.flatMap((p) => {
+  const c = pos(p);
+  const { label } = loop(p);
+  return [
+    { x: c.x - halfW(p), y: c.y - HALF_H },
+    { x: c.x + halfW(p), y: c.y + HALF_H },
+    { x: label.x - 10, y: label.y - 10 },
+    { x: label.x + 10, y: label.y + 10 },
+  ];
+});
+const minX = Math.min(...extents.map((p) => p.x)) - 2;
+const maxX = Math.max(...extents.map((p) => p.x)) + 2;
+const minY = Math.min(...extents.map((p) => p.y)) - 2;
+const maxY = Math.max(...extents.map((p) => p.y)) + 2;
+const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
 ---
 
 <nav aria-label="Site">
@@ -71,7 +118,7 @@ const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
     class="diagram"
     viewBox={viewBox}
     role="group"
-    style={`--w: ${((maxX - minX) * 0.95).toFixed(0)}px`}
+    style={`--w: ${f(maxX - minX)}px`}
   >
     <defs>
       <marker
@@ -83,7 +130,7 @@ const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
         markerHeight="7"
         orient="auto-start-reverse"
       >
-        <path class="head" d="M 1 1 L 9 5 L 1 9" />
+        <path class="head" d="M 1 1 L 9 5 L 1 9"></path>
       </marker>
       <marker
         id="nav-head-id"
@@ -94,24 +141,32 @@ const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
         markerHeight="7"
         orient="auto-start-reverse"
       >
-        <path class="head head-id" d="M 1 1 L 9 5 L 1 9" />
+        <path class="head head-id" d="M 1 1 L 9 5 L 1 9"></path>
       </marker>
     </defs>
 
     {
       edges.map((e) => (
-        <line
-          class="arrow"
-          x1={e.x1}
-          y1={e.y1}
-          x2={e.x2}
-          y2={e.y2}
-          marker-end="url(#nav-head)"
-        >
-          <title>
-            {meta[e.from].title} → {meta[e.to].title}
-          </title>
-        </line>
+        <g class="arrow">
+          <title>{e.title}</title>
+          <line class="hover" x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} />
+          <line
+            class="stroke"
+            x1={e.x1}
+            y1={e.y1}
+            x2={e.x2}
+            y2={e.y2}
+            marker-end="url(#nav-head)"
+          />
+        </g>
+      ))
+    }
+
+    {
+      corners.map((d) => (
+        <path class="corner" d={d}>
+          <title>pushout</title>
+        </path>
       ))
     }
 
@@ -153,7 +208,7 @@ const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
               pathLength="1"
               marker-end="url(#nav-head-id)"
             />
-            <text class="id-label" x={x} y={l.labelY}>
+            <text class="id-label" x={l.label.x} y={l.label.y}>
               id
             </text>
             {box}
@@ -167,9 +222,9 @@ const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
 
 <style>
   nav {
-    flex: 1 1 18rem;
+    flex: 1 1 20rem;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .diagram {
@@ -187,15 +242,34 @@ const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
     dominant-baseline: central;
   }
 
-  .arrow {
+  .arrow .stroke {
     stroke: var(--muted);
     stroke-width: 1.25;
+    transition: stroke 0.15s;
+  }
+
+  /* A wide invisible stroke so the arrow's tooltip is easy to hit. */
+  .arrow .hover {
+    stroke: transparent;
+    stroke-width: 10;
+  }
+
+  .arrow:hover .stroke {
+    stroke: var(--fg);
   }
 
   .head {
     fill: none;
     stroke: var(--muted);
     stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .corner {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
