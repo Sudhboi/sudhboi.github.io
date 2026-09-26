@@ -38,7 +38,7 @@ interface Leg {
 
 const ZOOM = 250; // ms to zoom out of, or into, a page
 const HOP = 250; // ms per arrow
-const JUMP = 200; // ms per teleport
+const JUMP = 550; // ms per teleport: pull back, glide over, zoom back in
 const SHRINK = 0.92; // how far the page shrinks as it zooms out
 
 const root = document.documentElement;
@@ -120,6 +120,8 @@ class Stage {
   centre = new Map<Page, { x: number; y: number }>();
   rect: DOMRect;
   zoom: number;
+  // A wider zoom that shows the whole diagram, for teleports.
+  overview: number;
   // Whether the nav is on screen to grow out of (not on a scrolled phone).
   inView: boolean;
 
@@ -140,6 +142,13 @@ class Stage {
     const about = this.centre.get("about")!;
     const col = Math.abs(about.x - home.x) || 1;
     this.zoom = Math.min(3, Math.max(1, (0.4 * innerWidth) / col));
+    // Fit the whole diagram, but always pull back well beyond the travel
+    // zoom: on wide screens the two are nearly the same.
+    const fit = Math.min(
+      (0.9 * innerWidth) / this.rect.width,
+      (0.9 * innerHeight) / this.rect.height,
+    );
+    this.overview = Math.min(fit, 0.6 * this.zoom);
 
     this.svg = original.cloneNode(true) as SVGSVGElement;
     // Give the copy its own marker ids: markers inherit visibility from where
@@ -170,11 +179,15 @@ class Stage {
     original.style.visibility = "hidden";
   }
 
-  cam(p: Page, zoom = this.zoom) {
-    const c = this.centre.get(p)!;
+  // Put the point c (relative to the diagram) in the middle of the window.
+  camAt(c: { x: number; y: number }, zoom: number) {
     const x = innerWidth / 2 - this.rect.left - zoom * c.x;
     const y = innerHeight / 2 - this.rect.top - zoom * c.y;
     return `translate(${x}px, ${y}px) scale(${zoom})`;
+  }
+
+  cam(p: Page, zoom = this.zoom) {
+    return this.camAt(this.centre.get(p)!, zoom);
   }
 
   // Where the copy sits exactly over the original.
@@ -208,24 +221,24 @@ class Stage {
   async play(ls: Leg[]) {
     for (const { a, b, jump } of ls) {
       if (jump) {
-        // Blink out of a, and into b.
+        // Pull back to see the whole diagram, glide over, and zoom in on b.
+        const middle = { x: this.rect.width / 2, y: this.rect.height / 2 };
+        const halfway = setTimeout(() => this.here(b), ms(JUMP / 2));
         await this.move(
           [
-            { transform: this.cam(a), opacity: 1 },
-            { transform: this.cam(a, this.zoom * 0.8), opacity: 0 },
+            { transform: this.cam(a), easing: "ease-in-out" },
+            {
+              transform: this.camAt(middle, this.overview),
+              easing: "ease-in-out",
+              offset: 0.5,
+            },
+            { transform: this.cam(b) },
           ],
-          JUMP / 2,
-          "ease-in",
+          JUMP,
+          "linear",
         );
+        clearTimeout(halfway);
         this.here(b);
-        await this.move(
-          [
-            { transform: this.cam(b, this.zoom * 1.25), opacity: 0 },
-            { transform: this.cam(b), opacity: 1 },
-          ],
-          JUMP / 2,
-          "ease-out",
-        );
         continue;
       }
       const arrow = this.arrow(a, b);
