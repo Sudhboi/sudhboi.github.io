@@ -20,7 +20,3 @@ research, functional programming, type theory, and reproducibility.
 ## Outside of code
 
 Video games, competitive mathematics, and Ricing on Linux.
-
-## Elsewhere
-
-[GitHub](https://github.com/Sudhboi) · [LinkedIn](https://www.linkedin.com/in/sudhir-krisna)

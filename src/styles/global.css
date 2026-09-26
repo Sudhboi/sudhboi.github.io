@@ -183,6 +183,66 @@ footer p {
   margin: 0 0 0.25rem;
 }
 
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer-row p {
+  margin: 0;
+}
+
+.elsewhere {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.elsewhere a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.3em 0.75em;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+.elsewhere a:hover,
+.elsewhere a:focus-visible {
+  color: var(--link);
+  border-color: var(--link);
+  transform: translateY(-1px);
+}
+
+.elsewhere svg {
+  width: 1.1em;
+  height: 1.1em;
+  fill: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elsewhere a {
+    transition: none;
+  }
+
+  .elsewhere a:hover,
+  .elsewhere a:focus-visible {
+    transform: none;
+  }
+}
+
 .footnote {
   font-size: 0.75rem;
   font-style: italic;
