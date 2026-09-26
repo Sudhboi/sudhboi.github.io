@@ -29,7 +29,11 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
       <a
         class="logo"
         href="/"
-        aria-current={page === "home" ? "page" : undefined}>Sudhir Krisna</a
+        aria-current={page === "home" ? "page" : undefined}
+        ><span class="abs" aria-hidden="true">(λx.</span>Sudhir Krisna<span
+          class="abs"
+          aria-hidden="true">)</span
+        ></a
       >
       <NavDiagram page={page} />
     </header>

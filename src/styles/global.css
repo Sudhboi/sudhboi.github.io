@@ -82,9 +82,36 @@ header {
 }
 
 .logo {
+  /* Room for the expanded "(λx.Sudhir Krisna)", so the nav doesn't shift. */
+  min-width: 18ch;
   font-weight: 700;
   color: var(--fg);
   text-decoration: none;
+  white-space: nowrap;
+}
+
+/* On hover the name is abstracted: Sudhir Krisna → (λx.Sudhir Krisna). */
+.logo .abs {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  vertical-align: bottom;
+  opacity: 0;
+  transition:
+    max-width 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.logo:hover .abs,
+.logo:focus-visible .abs {
+  max-width: 4ch;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo .abs {
+    transition: none;
+  }
 }
 
 main {
