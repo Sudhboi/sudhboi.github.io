@@ -8,6 +8,28 @@ const props = Astro.props.frontmatter ?? Astro.props;
 const page: Page | undefined = props.page;
 const title: string = props.title ?? (page ? meta[page].title : "");
 const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`;
+// Kept out of search results (and out of the sitemap: see astro.config.ts).
+const noindex: boolean = props.noindex ?? false;
+const url = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL("/og.png", Astro.site);
+
+// Who the site is about, for search engines; on the home page only.
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Sudhir Krisna",
+  url: Astro.site,
+  jobTitle: "Research Assistant",
+  affiliation: {
+    "@type": "CollegeOrUniversity",
+    name: "University of New Brunswick",
+  },
+  knowsAbout: ["Functional programming", "Type theory", "Reproducibility"],
+  sameAs: [
+    "https://github.com/Sudhboi",
+    "https://www.linkedin.com/in/sudhir-krisna",
+  ],
+};
 ---
 
 <!doctype html>
@@ -16,6 +38,30 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{docTitle}</title>
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <link rel="canonical" href={url} />
+      )
+    }
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sudhir Krisna" />
+    <meta property="og:title" content={docTitle} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Sudhir Krisna, above the site's navigation diagram"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    {
+      page === "home" && (
+        <script type="application/ld+json" set:html={JSON.stringify(person)} />
+      )
+    }
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
