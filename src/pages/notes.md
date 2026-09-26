@@ -5,5 +5,7 @@ page: notes
 
 # Notes
 
+Things I've written up while learning them.
+
 - [Linear Algebra Notes](/linearalgebranotes/)
-- [free_groups_26](/free_groups_26/)
+- [free_groups_26 documentation](/free_groups_26/)

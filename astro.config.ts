@@ -9,7 +9,7 @@ const navCategory: AstroIntegration = {
       const problems = diagramProblems();
       if (problems.length > 0)
         throw new Error(
-          "Nav diagram is not a thin category with initial object Home:\n  " +
+          "Nav diagram is not the category it claims to be:\n  " +
             problems.join("\n  "),
         );
     },
