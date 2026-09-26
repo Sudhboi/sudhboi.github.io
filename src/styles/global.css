@@ -291,12 +291,14 @@ header nav {
   white-space: nowrap;
 }
 
-/* On hover the name is abstracted: Sudhir Krisna → (λx.Sudhir Krisna). */
+/* On hover the name gets its type: Sudhir Krisna → Sudhir Krisna :: Name.
+   `pre` keeps the leading space, which an inline-block would drop. */
 .logo .abs {
   display: inline-block;
   max-width: 0;
   overflow: hidden;
   vertical-align: bottom;
+  white-space: pre;
   opacity: 0;
   transition:
     max-width 0.25s ease,
@@ -305,7 +307,7 @@ header nav {
 
 .logo:hover .abs,
 .logo:focus-visible .abs {
-  max-width: 4ch;
+  max-width: 8ch;
   opacity: 1;
 }
 
@@ -511,7 +513,7 @@ footer {
 @media (min-width: 1100px) and (min-height: 560px) {
   body {
     display: grid;
-    grid-template-columns: 30rem minmax(0, 72ch);
+    grid-template-columns: 32rem minmax(0, 72ch);
     justify-content: center;
     max-width: none;
     /* The single grid row fills the window, so short content can centre in it. */
