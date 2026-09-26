@@ -74,6 +74,34 @@ export function above(p: Page): Set<Page> {
 // Whether there is a morphism a -> b.
 export const leq = (a: Page, b: Page) => above(a).has(b);
 
+// The shortest chain of generating arrows from a to b, if there is one.
+function path(a: Page, b: Page): Page[] | undefined {
+  const parent = new Map<Page, Page | undefined>([[a, undefined]]);
+  const queue = [a];
+  while (queue.length > 0 && !parent.has(b)) {
+    const p = queue.shift()!;
+    for (const q of successors(p))
+      if (!parent.has(q)) parent.set(q, p), queue.push(q);
+  }
+  if (!parent.has(b)) return undefined;
+  const chain: Page[] = [];
+  for (let p: Page | undefined = b; p !== undefined; p = parent.get(p))
+    chain.unshift(p);
+  return chain;
+}
+
+// How the nav travels from one page to another (scripts/travel.ts): along
+// the arrows when a morphism exists, else by teleporting to Home (initial,
+// so it reaches everything) and going on from there.
+export function route(
+  from: Page,
+  to: Page,
+): { teleport: boolean; path: Page[] } {
+  const direct = path(from, to);
+  if (direct) return { teleport: false, path: direct };
+  return { teleport: true, path: path("home", to)! };
+}
+
 // Everything wrong with the diagram; empty when all is well.
 export function diagramProblems(): string[] {
   const problems: string[] = [];
