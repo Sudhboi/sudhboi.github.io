@@ -1,0 +1,280 @@
+---
+// The site's navigation, drawn as the commutative diagram of its category.
+// Geometry is computed at build time; the output is a static SVG.
+import { arrows, layout, meta, pages, type Page } from "../category";
+
+interface Props {
+  page?: Page;
+}
+const { page } = Astro.props;
+
+const COL = 150; // horizontal distance between columns
+const ROW = 76; // vertical distance between rows
+const FONT = 16;
+const CHAR = FONT / 2; // Iosevka's advance width is exactly 0.5em
+const PAD_X = 8; // gap between a label and an arrow touching its side
+const HALF_H = 12; // half the height of a node's box
+const GAP = 3; // extra breathing room at each end of an arrow
+const LOOP = 40; // bézier control-point offset of the identity loop
+
+const pos = (p: Page) => ({ x: layout[p][0] * COL, y: layout[p][1] * ROW });
+const halfW = (p: Page) => (meta[p].title.length * CHAR) / 2 + PAD_X;
+
+// Distance from a box's centre to its edge along the unit vector (ux, uy).
+const toEdge = (p: Page, ux: number, uy: number) =>
+  Math.min(
+    ux === 0 ? Infinity : halfW(p) / Math.abs(ux),
+    uy === 0 ? Infinity : HALF_H / Math.abs(uy),
+  ) + GAP;
+
+const edges = arrows.map(([a, b]) => {
+  const A = pos(a);
+  const B = pos(b);
+  const len = Math.hypot(B.x - A.x, B.y - A.y);
+  const ux = (B.x - A.x) / len;
+  const uy = (B.y - A.y) / len;
+  const s = toEdge(a, ux, uy);
+  const e = toEdge(b, ux, uy);
+  return {
+    from: a,
+    to: b,
+    x1: A.x + ux * s,
+    y1: A.y + uy * s,
+    x2: B.x - ux * e,
+    y2: B.y - uy * e,
+  };
+});
+
+// Identity loops open away from the diagram: up on the top row, down below.
+const maxRow = Math.max(...pages.map((p) => layout[p][1]));
+const loop = (p: Page) => {
+  const { x, y } = pos(p);
+  const s = layout[p][1] === maxRow && maxRow > 0 ? 1 : -1;
+  const y0 = y + s * HALF_H;
+  return {
+    d: `M ${x - 7} ${y0} C ${x - 26} ${y0 + s * LOOP}, ${x + 26} ${y0 + s * LOOP}, ${x + 7} ${y0}`,
+    labelY: y0 + s * (LOOP * 0.75 + 10),
+  };
+};
+
+// Room for an identity loop and its label above and below the diagram.
+const MARGIN_Y = HALF_H + LOOP * 0.75 + 18;
+const minX = Math.min(...pages.map((p) => pos(p).x - halfW(p))) - 4;
+const maxX = Math.max(...pages.map((p) => pos(p).x + halfW(p))) + 4;
+const viewBox = [minX, -MARGIN_Y, maxX - minX, maxRow * ROW + 2 * MARGIN_Y]
+  .map((n) => n.toFixed(1))
+  .join(" ");
+---
+
+<nav aria-label="Site">
+  <svg
+    class="diagram"
+    viewBox={viewBox}
+    role="group"
+    style={`--w: ${((maxX - minX) * 0.95).toFixed(0)}px`}
+  >
+    <defs>
+      <marker
+        id="nav-head"
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path class="head" d="M 1 1 L 9 5 L 1 9" />
+      </marker>
+      <marker
+        id="nav-head-id"
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path class="head head-id" d="M 1 1 L 9 5 L 1 9" />
+      </marker>
+    </defs>
+
+    {
+      edges.map((e) => (
+        <line
+          class="arrow"
+          x1={e.x1}
+          y1={e.y1}
+          x2={e.x2}
+          y2={e.y2}
+          marker-end="url(#nav-head)"
+        >
+          <title>
+            {meta[e.from].title} → {meta[e.to].title}
+          </title>
+        </line>
+      ))
+    }
+
+    {
+      pages.map((p) => {
+        const { x, y } = pos(p);
+        const box = (
+          <rect
+            class="hit"
+            x={x - halfW(p)}
+            y={y - HALF_H}
+            width={2 * halfW(p)}
+            height={2 * HALF_H}
+          />
+        );
+        const label = (
+          <text x={x} y={y}>
+            {meta[p].title}
+          </text>
+        );
+        if (p !== page)
+          return (
+            <a class="obj" href={meta[p].href}>
+              {box}
+              {label}
+            </a>
+          );
+        const l = loop(p);
+        return (
+          <g
+            class="obj current"
+            tabindex="0"
+            aria-current="page"
+            aria-label={`${meta[p].title} (current page)`}
+          >
+            <path
+              class="id"
+              d={l.d}
+              pathLength="1"
+              marker-end="url(#nav-head-id)"
+            />
+            <text class="id-label" x={x} y={l.labelY}>
+              id
+            </text>
+            {box}
+            {label}
+          </g>
+        );
+      })
+    }
+  </svg>
+</nav>
+
+<style>
+  nav {
+    flex: 1 1 18rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .diagram {
+    display: block;
+    width: 100%;
+    max-width: var(--w);
+    height: auto;
+    overflow: visible;
+    font-size: 16px;
+  }
+
+  text {
+    fill: var(--link);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  .arrow {
+    stroke: var(--muted);
+    stroke-width: 1.25;
+  }
+
+  .head {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .hit {
+    fill: transparent;
+  }
+
+  .obj {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .obj:hover text,
+  .obj:focus-visible text {
+    fill: var(--fg);
+    text-decoration: underline;
+  }
+
+  .obj:focus-visible .hit {
+    stroke: var(--link);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+  }
+
+  .current {
+    cursor: default;
+  }
+
+  .current text {
+    fill: var(--fg);
+    font-weight: 700;
+  }
+
+  .current:hover text,
+  .current:focus-visible text {
+    text-decoration: none;
+  }
+
+  /* The identity arrow draws itself when you point at where you already are. */
+  .id {
+    fill: none;
+    stroke: var(--link);
+    stroke-width: 1.25;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+    transition:
+      stroke-dashoffset 0.35s ease-out,
+      opacity 0.15s;
+  }
+
+  .head-id {
+    stroke: var(--link);
+  }
+
+  .current text.id-label {
+    fill: var(--link);
+    font-weight: 400;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.2s 0.15s;
+  }
+
+  .current:hover .id,
+  .current:focus-visible .id {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  .current:hover .id-label,
+  .current:focus-visible .id-label {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .id,
+    .current text.id-label {
+      transition: none;
+    }
+  }
+</style>
