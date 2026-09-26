@@ -19,7 +19,7 @@ research, functional programming, type theory, and reproducibility.
 
 ## Outside of code
 
-Video games, competitive mathematics, and Linux desktop customization.
+Video games, competitive mathematics, and Ricing on Linux.
 
 ## Elsewhere
 
