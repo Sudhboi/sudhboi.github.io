@@ -216,8 +216,11 @@ header {
   border-bottom: 1px solid var(--rule);
 }
 
+/* Where the diagram gets a row to itself (below the name and links), keep
+   it at about its side-by-side size, so the sticky header stays short. */
 header nav {
   flex: 1 1 20rem;
+  max-width: 26rem;
 }
 
 /* Pin the header while the content scrolls, but only where it leaves room:
@@ -236,9 +239,9 @@ header nav {
   }
 }
 
+/* No room is reserved for the expanded "(λx.Sudhir Krisna)": the links to
+   its right slide along as it grows. */
 .logo {
-  /* Room for the expanded "(λx.Sudhir Krisna)", so the nav doesn't shift. */
-  min-width: 18ch;
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--fg);
@@ -270,12 +273,13 @@ header nav {
   }
 }
 
-/* The name, with GitHub and LinkedIn just below it. */
+/* The name, with GitHub and LinkedIn to its right (below, if there isn't
+   room). */
 .identity {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
 }
 
 .elsewhere {
@@ -509,6 +513,7 @@ footer {
   header nav {
     flex: none;
     width: 100%;
+    max-width: none;
   }
 
   /* Short content is centred, and the divider spans just the content. Long
