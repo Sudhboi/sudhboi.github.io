@@ -34,6 +34,10 @@
   --muted: #6b6a66;
   --rule: #dddbd4;
   --link: #2f5d9e;
+  /* Inline code tokens, by kind (src/code-kinds.ts). */
+  --tok-lang: #8a4b12;
+  --tok-lib: #2e6b3a;
+  --tok-tool: #7a3e7a;
   color-scheme: light dark;
 }
 
@@ -46,6 +50,9 @@
     --muted: #9a988f;
     --rule: #33322f;
     --link: #8fb4ea;
+    --tok-lang: #e0a86a;
+    --tok-lib: #8cc79a;
+    --tok-tool: #d39bd3;
   }
 }
 
@@ -55,6 +62,9 @@
   --muted: #9a988f;
   --rule: #33322f;
   --link: #8fb4ea;
+  --tok-lang: #e0a86a;
+  --tok-lib: #8cc79a;
+  --tok-tool: #d39bd3;
   color-scheme: dark;
 }
 
@@ -405,6 +415,23 @@ h2 + .meta {
 code,
 pre {
   font-family: inherit;
+}
+
+/* Tokens stay whole, like code: `graph-tool` shouldn't break at its hyphen. */
+code {
+  white-space: nowrap;
+}
+
+.tok-lang {
+  color: var(--tok-lang);
+}
+
+.tok-lib {
+  color: var(--tok-lib);
+}
+
+.tok-tool {
+  color: var(--tok-tool);
 }
 
 pre {

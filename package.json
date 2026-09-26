@@ -9,7 +9,9 @@
     "check": "astro check"
   },
   "dependencies": {
+    "@astrojs/markdown-satteri": "^0.4.2",
     "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.3.5"
+    "astro": "^7.3.5",
+    "satteri": "^0.10.5"
   }
 }
