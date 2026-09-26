@@ -25,6 +25,7 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
     />
   </head>
   <body>
+    <a class="skip" href="#content">Skip to content</a>
     <div class="sidebar">
       <header>
         <a
@@ -69,7 +70,7 @@ const docTitle = page === "home" ? "Sudhir Krisna" : `${title} · Sudhir Krisna`
         </p>
       </footer>
     </div>
-    <main>
+    <main id="content" tabindex="-1">
       <slot />
     </main>
   </body>

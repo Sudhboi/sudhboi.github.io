@@ -5,12 +5,6 @@
 // "a leads on to b". The category is thin — at most one morphism between any
 // two pages — so every diagram in it commutes.
 //
-// Two squares are more than commutative: they are pushouts. free_groups_26 is
-// both research work and an open-source project, and it is the *least* page
-// that both Experience and Projects lead to. Likewise Lambda for Projects and
-// About (my interests). In a thin category a pushout is a join, so this is
-// checkable.
-//
 // `astro.config.ts` refuses to build unless all of that holds.
 
 export const pages = [
@@ -47,12 +41,6 @@ export const arrows: Arrow[] = [
   ["projects", "lambda", "an interpreter in progress"],
   ["about", "lambda", "an interest in type theory"],
   ["about", "notes", "what I'm studying"],
-];
-
-// Squares  a <- apex -> b  whose pushout is `pushout`.
-export const pushouts: { apex: Page; legs: [Page, Page]; pushout: Page }[] = [
-  { apex: "home", legs: ["experience", "projects"], pushout: "freegroups" },
-  { apex: "home", legs: ["projects", "about"], pushout: "lambda" },
 ];
 
 export type Loop = "up" | "down" | "left" | "right";
@@ -96,17 +84,6 @@ export function diagramProblems(): string[] {
   // Home is initial: it has a (necessarily unique) morphism to every page.
   for (const p of pages)
     if (!leq("home", p)) problems.push(`no morphism home -> ${p}`);
-
-  // Each claimed pushout is the least page both legs lead to.
-  for (const { apex, legs: [a, b], pushout } of pushouts) {
-    const name = `pushout of ${a} <- ${apex} -> ${b}`;
-    if (!leq(apex, a) || !leq(apex, b)) problems.push(`${name}: not a span`);
-    if (!leq(a, pushout) || !leq(b, pushout))
-      problems.push(`${name}: ${pushout} is not a cocone`);
-    for (const q of above(a))
-      if (above(b).has(q) && !leq(pushout, q))
-        problems.push(`${name}: ${q} is a cocone not factoring through ${pushout}`);
-  }
 
   return problems;
 }

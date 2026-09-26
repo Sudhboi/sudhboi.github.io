@@ -72,6 +72,27 @@ a {
   text-underline-offset: 0.2em;
 }
 
+/* The header and footer come before <main> in the DOM, so keyboard users get
+   a way past them. Absolute, so it never takes a grid cell. */
+.skip {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 2;
+  padding: 0.3em 0.75em;
+  border: 1px solid var(--link);
+  background: var(--bg);
+  transform: translateY(-200%);
+}
+
+.skip:focus {
+  transform: none;
+}
+
+main:focus {
+  outline: none;
+}
+
 header {
   display: flex;
   flex-wrap: wrap;
