@@ -4,6 +4,7 @@
 //   Enter     follow it (native: the nodes are links)
 //   g h       go home
 //   H L       back / forward in history
+//   t         toggle light / dark (scripts/theme.ts)
 //   ?         show or hide the cheatsheet
 
 type Dir = "h" | "j" | "k" | "l";
@@ -109,6 +110,10 @@ document.addEventListener("keydown", (e) => {
       return history.back();
     case "L":
       return history.forward();
+    case "t":
+      return document
+        .querySelector<HTMLButtonElement>(".theme-toggle")
+        ?.click();
   }
 });
 

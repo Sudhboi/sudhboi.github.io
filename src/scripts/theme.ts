@@ -1,0 +1,43 @@
+// Light/dark toggle. The page follows prefers-color-scheme until the button
+// is pressed; the choice is kept in localStorage and applied as
+// <html data-theme>, before first paint, by the inline script in Base.astro.
+// Choosing what the system already prefers forgets the override.
+
+type Theme = "light" | "dark";
+const KEY = "theme";
+
+const root = document.documentElement;
+const system = matchMedia("(prefers-color-scheme: dark)");
+const button = document.querySelector<HTMLButtonElement>(".theme-toggle");
+
+const systemTheme = (): Theme => (system.matches ? "dark" : "light");
+const current = (): Theme =>
+  (root.dataset.theme as Theme | undefined) ?? systemTheme();
+
+function label() {
+  if (!button) return;
+  const next = current() === "dark" ? "light" : "dark";
+  button.setAttribute("aria-label", `Switch to ${next} mode`);
+  button.title = `Switch to ${next} mode`;
+}
+
+function set(theme: Theme) {
+  try {
+    if (theme === systemTheme()) localStorage.removeItem(KEY);
+    else localStorage.setItem(KEY, theme);
+  } catch {
+    // Storage blocked: the choice still holds for this page.
+  }
+  if (theme === systemTheme()) delete root.dataset.theme;
+  else root.dataset.theme = theme;
+  label();
+}
+
+button?.addEventListener("click", () =>
+  set(current() === "dark" ? "light" : "dark"),
+);
+system.addEventListener("change", label);
+
+label();
+// Only show the button once it works.
+button?.removeAttribute("hidden");
