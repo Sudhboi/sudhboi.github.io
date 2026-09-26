@@ -81,6 +81,22 @@ header {
   border-bottom: 1px solid var(--rule);
 }
 
+/* Pin the header while the content scrolls, but only where it leaves room:
+   the diagram is ~250px tall, too much of a short or phone screen. */
+@media (min-height: 640px) and (min-width: 600px) {
+  body {
+    padding-top: 1rem;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding-top: 1rem;
+    background: var(--bg);
+  }
+}
+
 .logo {
   /* Room for the expanded "(λx.Sudhir Krisna)", so the nav doesn't shift. */
   min-width: 18ch;
