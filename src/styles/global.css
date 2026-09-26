@@ -1,0 +1,134 @@
+@font-face {
+  font-family: "Iosevka Term";
+  src: url("/fonts/IosevkaTerm-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Iosevka Term";
+  src: url("/fonts/IosevkaTerm-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Iosevka Term";
+  src: url("/fonts/IosevkaTerm-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Iosevka Term";
+  src: url("/fonts/IosevkaTerm-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --font: "Iosevka Term", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --bg: #fbfaf7;
+  --fg: #1d1d1b;
+  --muted: #6b6a66;
+  --rule: #dddbd4;
+  --link: #2f5d9e;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --fg: #e6e4de;
+    --muted: #9a988f;
+    --rule: #33322f;
+    --link: #8fb4ea;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.55;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+body {
+  max-width: 80ch;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+a {
+  color: var(--link);
+  text-underline-offset: 0.2em;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.logo {
+  font-weight: 700;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+nav [aria-current="page"] {
+  color: var(--muted);
+}
+
+main {
+  padding: 1rem 0 2rem;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+}
+
+code,
+pre {
+  font-family: inherit;
+}
+
+pre {
+  overflow-x: auto;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--rule);
+}
+
+footer {
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
