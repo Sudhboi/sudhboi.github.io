@@ -652,12 +652,14 @@ dialog.keys button:focus-visible {
   outline: none;
 }
 
-/* "Press : to open the prompt", pinned bottom right on every page. Unhidden
+/* "Press : to open the prompt", pinned bottom centre on every page. Unhidden
    by scripts/prompt.ts; out of the way while the command line is open. */
 .prompt-hint {
   position: fixed;
-  right: 0.75rem;
   bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
   z-index: 2;
   display: inline-flex;
   align-items: center;
