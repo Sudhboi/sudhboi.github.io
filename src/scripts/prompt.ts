@@ -4,7 +4,8 @@
 //   :t <thing>     its type: a page, a token from the pages, or the author
 //   :browse        the pages and arrows of the category
 //   :set bg=dark   switch light / dark (scripts/theme.ts)
-//   :pwd, :help, :q and a few others
+//   :q             close it
+//   :pwd, :help and a few others
 //
 // Suggestions show as soon as it opens, filtered as you type: commands first,
 // then the argument's options. ↑ / ↓ move the highlight through them, Tab /
@@ -183,17 +184,12 @@ const commands: Command[] = [
   {
     name: "q",
     usage: "q",
-    hint: "quit",
+    hint: "close the prompt",
     listed: true,
-    run: () => "E37: No write since last change (add ! to override)",
+    run: () => close(),
   },
-  {
-    name: "q!",
-    usage: "q!",
-    hint: "",
-    listed: false,
-    run: () => "There is no escape. (Esc, though, closes this.)",
-  },
+  { name: "q!", usage: "q!", hint: "", listed: false, run: () => close() },
+  { name: "quit", usage: "quit", hint: "", listed: false, run: () => close() },
   {
     name: "wq",
     usage: "wq",
