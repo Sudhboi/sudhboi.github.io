@@ -202,6 +202,12 @@ const person = {
         </span>
       </div>
     </form>
+    <!-- Always at the bottom of the window; opens the command line. Hidden
+         until scripts/prompt.ts runs, and while the command line is open. -->
+    <button class="prompt-hint" type="button" hidden>
+      <span class="keyed">Press <kbd>:</kbd> to open the prompt</span>
+      <span class="touch"><kbd>:</kbd> Open the prompt</span>
+    </button>
     <script>
       import "../scripts/nav-keys";
       import "../scripts/trail";

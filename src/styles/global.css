@@ -652,9 +652,65 @@ dialog.keys button:focus-visible {
   outline: none;
 }
 
+/* "Press : to open the prompt", pinned bottom right on every page. Unhidden
+   by scripts/prompt.ts; out of the way while the command line is open. */
+.prompt-hint {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3em 0.75em;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.prompt-hint[hidden],
+.prompt:not([hidden]) ~ .prompt-hint {
+  display: none;
+}
+
+.prompt-hint:hover,
+.prompt-hint:focus-visible {
+  color: var(--link);
+  border-color: var(--link);
+  outline: none;
+}
+
+.prompt-hint kbd {
+  margin: 0 0.15em;
+  color: var(--fg);
+}
+
+.prompt-hint .touch {
+  display: none;
+}
+
+/* Without a keyboard there's no ":" to press, so it just says what it does. */
+@media (hover: none) {
+  .prompt-hint .keyed {
+    display: none;
+  }
+
+  .prompt-hint .touch {
+    display: inline;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .prompt {
+  .prompt,
+  .prompt-hint {
     animation: none;
+    transition: none;
   }
 }
 
@@ -741,5 +797,11 @@ footer {
 
   main > :last-child {
     margin-bottom: 0;
+  }
+
+  /* Room under the content for the prompt hint, so the last line scrolls
+     clear of it. Only once the hint shows: with JS off nothing changes. */
+  body:has(> .prompt-hint:not([hidden])) {
+    padding-bottom: 3.5rem;
   }
 }
