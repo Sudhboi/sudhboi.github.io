@@ -440,6 +440,122 @@ code {
   color: var(--tok-tool);
 }
 
+/* Pointing at a token shows its type, as :t would (src/code-kinds.ts sets
+   data-type): numpy :: Lib. Not displayed until then, so a hidden one near
+   the edge can't widen the page; @starting-style fades it in anyway. */
+code[data-type] {
+  position: relative;
+}
+
+code[data-type]::after {
+  content: attr(data-type);
+  position: absolute;
+  bottom: calc(100% + 0.3rem);
+  left: 50%;
+  z-index: 3;
+  padding: 0.1em 0.6em;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  white-space: pre;
+  pointer-events: none;
+  display: none;
+  opacity: 0;
+  transform: translate(-50%, 0.25rem);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    display 0.15s allow-discrete;
+}
+
+code[data-type]:hover::after {
+  display: block;
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@starting-style {
+  code[data-type]:hover::after {
+    opacity: 0;
+    transform: translate(-50%, 0.25rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  code[data-type]::after {
+    transition: none;
+  }
+}
+
+/* Experience reads like `git log --graph`: each role is a commit (*) on one
+   rail, newest first, down to the root (Education). The rail is each entry's
+   left border, so vertical margins become padding to keep it unbroken. */
+main[data-page="experience"] > h2,
+main[data-page="experience"] > h2 ~ * {
+  margin: 0 0 0 0.5rem;
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--rule);
+}
+
+main[data-page="experience"] > h2 {
+  position: relative;
+  padding-top: 1.75rem;
+  padding-bottom: 0.3rem;
+}
+
+main[data-page="experience"] > h2 ~ :is(p, ul) {
+  padding-block: 0.5rem;
+}
+
+main[data-page="experience"] > h2 ~ .meta {
+  padding-block: 0 0.25rem;
+}
+
+main[data-page="experience"] > h2 ~ ul {
+  padding-left: calc(1.5rem + 1.5em);
+}
+
+/* The commit: a * on the rail, masking it. */
+main[data-page="experience"] > h2::before {
+  content: "*";
+  position: absolute;
+  top: 1.75rem;
+  left: -0.5px;
+  padding: 0 0.15em;
+  background: var(--bg);
+  color: var(--link);
+  /* Iosevka's * sits high in the line: bring it level with the heading. */
+  transform: translate(-50%, 0.2em);
+}
+
+/* The rail starts at the newest commit and ends at the root. */
+main[data-page="experience"] > h2:first-of-type,
+main[data-page="experience"] > h2:last-of-type,
+main[data-page="experience"] > h2:last-of-type ~ * {
+  border-left-color: transparent;
+}
+
+main[data-page="experience"] > h2:first-of-type::after,
+main[data-page="experience"] > h2:last-of-type::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  border-left: 1px solid var(--rule);
+}
+
+main[data-page="experience"] > h2:first-of-type::after {
+  top: calc(1.75rem + 0.6em);
+  bottom: 0;
+}
+
+main[data-page="experience"] > h2:last-of-type::after {
+  top: 0;
+  height: calc(1.75rem + 0.6em);
+}
+
 pre {
   overflow-x: auto;
   padding: 0.75rem 1rem;
