@@ -519,6 +519,145 @@ dialog.keys button:focus-visible {
   outline: none;
 }
 
+/* The ":" command line (scripts/prompt.ts), pinned to the bottom like vim's.
+   Output and suggestions stack above the input line. */
+.prompt {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  padding: 0.5rem max(1rem, calc((100vw - 60rem) / 2)) 0.6rem;
+  border-top: 1px solid var(--rule);
+  background: var(--bg);
+  box-shadow: 0 -0.5rem 1.5rem rgb(0 0 0 / 0.08);
+  animation: prompt-up 0.15s ease-out;
+}
+
+.prompt[hidden],
+.prompt [hidden] {
+  display: none;
+}
+
+@keyframes prompt-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+.prompt .out {
+  flex: 0 1 auto;
+  min-height: 0;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  overflow: auto;
+  border: none;
+  color: var(--fg);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+/* The suggestions keep their room (scrolling past ~12); long output gives. */
+.prompt .suggestions {
+  flex: 0 0 auto;
+  max-height: 20em;
+  margin: 0 0 0.4rem;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.prompt [role="option"] {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.1rem 0.5rem;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+}
+
+.prompt [role="option"] .label {
+  min-width: 21ch;
+  color: var(--link);
+  white-space: pre;
+}
+
+.prompt [role="option"] .hint {
+  color: var(--muted);
+}
+
+.prompt [role="option"]:hover {
+  background: color-mix(in srgb, var(--rule) 45%, transparent);
+}
+
+.prompt [aria-selected="true"] {
+  border-left-color: var(--link);
+  background: color-mix(in srgb, var(--rule) 70%, transparent);
+}
+
+.prompt [aria-selected="true"] .label {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.prompt .line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25ch;
+  font-size: 1rem;
+}
+
+.prompt label {
+  color: var(--link);
+  font-weight: 700;
+}
+
+/* The input sits over a copy of what's typed, followed by the rest of the
+   top suggestion in muted text. */
+.prompt .field {
+  position: relative;
+  flex: 1;
+}
+
+.prompt .ghost,
+.prompt input {
+  font: inherit;
+  letter-spacing: normal;
+}
+
+.prompt .ghost {
+  position: absolute;
+  inset: 0;
+  color: var(--muted);
+  white-space: pre;
+  pointer-events: none;
+}
+
+.prompt .ghost .typed {
+  visibility: hidden;
+}
+
+.prompt input {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  caret-color: var(--link);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt {
+    animation: none;
+  }
+}
+
 /* Header and footer share a wrapper so they can form the wide-screen sidebar.
    Elsewhere it dissolves, and the footer goes back below the content. */
 body {
