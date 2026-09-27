@@ -170,6 +170,8 @@ const person = {
         <dd>back / forward</dd>
         <dt><kbd>t</kbd></dt>
         <dd>switch light / dark</dd>
+        <dt><kbd>:</kbd></dt>
+        <dd>command line (<kbd>Tab</kbd> completes, <kbd>Esc</kbd> closes)</dd>
         <dt><kbd>?</kbd></dt>
         <dd>show or hide this list</dd>
       </dl>
@@ -177,11 +179,35 @@ const person = {
         <button>Close</button>
       </form>
     </dialog>
+    <!-- The ":" command line (scripts/prompt.ts). Hidden until opened. -->
+    <form class="prompt" hidden>
+      <pre class="out" aria-live="polite" hidden></pre>
+      <ul class="suggestions" id="prompt-list" role="listbox" aria-label="Suggestions" hidden></ul>
+      <div class="line">
+        <label for="prompt-input">:</label>
+        <span class="field">
+          <span class="ghost" aria-hidden="true"></span>
+          <input
+            id="prompt-input"
+            type="text"
+            role="combobox"
+            aria-label="Command"
+            aria-controls="prompt-list"
+            aria-expanded="false"
+            aria-autocomplete="list"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+        </span>
+      </div>
+    </form>
     <script>
       import "../scripts/nav-keys";
       import "../scripts/trail";
       import "../scripts/theme";
       import "../scripts/travel";
+      import "../scripts/prompt";
     </script>
   </body>
 </html>

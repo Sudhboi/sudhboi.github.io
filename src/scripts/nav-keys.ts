@@ -5,8 +5,10 @@
 //   g h       go home
 //   H L       back / forward in history
 //   t         toggle light / dark (scripts/theme.ts)
+//   :         open the command line (scripts/prompt.ts)
 //   ?         show or hide the cheatsheet
 
+import { openPrompt } from "./prompt";
 import { travelTo } from "./travel";
 
 type Dir = "h" | "j" | "k" | "l";
@@ -116,6 +118,10 @@ document.addEventListener("keydown", (e) => {
       return document
         .querySelector<HTMLButtonElement>(".theme-toggle")
         ?.click();
+    case ":":
+      // Don't let the ":" land in the input as it takes focus.
+      e.preventDefault();
+      return openPrompt();
   }
 });
 

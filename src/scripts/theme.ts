@@ -3,7 +3,7 @@
 // <html data-theme>, before first paint, by the inline script in Base.astro.
 // Choosing what the system already prefers forgets the override.
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 const KEY = "theme";
 
 const root = document.documentElement;
@@ -11,7 +11,7 @@ const system = matchMedia("(prefers-color-scheme: dark)");
 const button = document.querySelector<HTMLButtonElement>(".theme-toggle");
 
 const systemTheme = (): Theme => (system.matches ? "dark" : "light");
-const current = (): Theme =>
+export const current = (): Theme =>
   (root.dataset.theme as Theme | undefined) ?? systemTheme();
 
 function label() {
@@ -37,7 +37,7 @@ function set(theme: Theme) {
 // with reduced motion, switch instantly.
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 
-function toggle() {
+export function toggle() {
   const next: Theme = current() === "dark" ? "light" : "dark";
   if (!("startViewTransition" in document) || still.matches) return set(next);
   document.startViewTransition(() => set(next));
