@@ -7,9 +7,10 @@
 //   :pwd, :help, :q and a few others
 //
 // Suggestions show as soon as it opens, filtered as you type: commands first,
-// then the argument's options. Tab / Shift-Tab cycle through them, the top
-// one is ghosted in after the cursor, and Enter takes it if what's typed
-// isn't a whole command. ↑ / ↓ walk the history, kept in sessionStorage.
+// then the argument's options. ↑ / ↓ move the highlight through them, Tab /
+// Shift-Tab fill them in one by one, the highlighted one is ghosted in after
+// the cursor, and Enter takes it (or runs what's typed, if nothing matches).
+// Shift-↑ / Shift-↓ walk the history, kept in sessionStorage.
 
 import { arrows, meta, pages, type Page } from "../category";
 import { kinds, kindType } from "../kinds";
@@ -275,7 +276,8 @@ function remember(v: string) {
 let options: Option[] = [];
 let sel = 0;
 let cycling = false; // Tab is stepping through a fixed list
-let back = -1; // position in the history while ↑ / ↓ walk it
+let navigated = false; // ↑ / ↓ have moved the highlight since the last edit
+let back = -1; // position in the history while Shift-↑ / Shift-↓ walk it
 let draft = ""; // what was typed before walking the history
 let returnTo: Element | null = null;
 
@@ -305,11 +307,13 @@ function render() {
     list.children[sel]?.scrollIntoView({ block: "nearest" });
   } else input.removeAttribute("aria-activedescendant");
 
-  // Ghost in the rest of the top suggestion after what's typed.
+  // Ghost in the rest of the highlighted suggestion after what's typed.
   const v = input.value;
   const o = options[sel];
   const rest =
-    !cycling && v !== "" && o && o.fill.startsWith(v) ? o.fill.slice(v.length) : "";
+    !cycling && (v !== "" || navigated) && o && o.fill.startsWith(v)
+      ? o.fill.slice(v.length)
+      : "";
   const typed = document.createElement("span");
   typed.className = "typed";
   typed.textContent = v;
@@ -319,6 +323,7 @@ function render() {
 function refresh() {
   if (!input) return;
   cycling = false;
+  navigated = false;
   options = suggest(input.value);
   sel = 0;
   render();
@@ -359,13 +364,12 @@ function run(v: string) {
 
 function enter() {
   if (!input) return;
-  const typed = input.value.trimStart();
-  let v = typed.trim();
-  if (v === "") return close();
-  // Take the highlighted suggestion when it finishes what's typed, or when
-  // what's typed isn't a whole command. One that wants an argument waits.
+  let v = input.value.trim();
   const o = options[sel];
-  if (o && (!complete(v) || o.fill.toLowerCase().startsWith(typed.toLowerCase()))) {
+  if (v === "" && !(navigated && o)) return close();
+  // Take the highlighted suggestion, if there is one; what's typed runs as
+  // it is only when nothing matches it. One that wants an argument waits.
+  if (o) {
     if (!complete(o.fill)) {
       fill(o.fill);
       return refresh();
@@ -387,6 +391,15 @@ function tab(step: 1 | -1) {
   // Only one choice: go straight on to its argument's options.
   if (options.length === 1) refresh();
   else render();
+}
+
+// Move the highlight without touching what's typed; Enter or Tab takes it.
+function move(step: 1 | -1) {
+  if (options.length === 0) return;
+  sel = (sel + step + options.length) % options.length;
+  cycling = false;
+  navigated = true;
+  render();
 }
 
 function walk(step: 1 | -1) {
@@ -449,10 +462,10 @@ input?.addEventListener("keydown", (e) => {
       return tab(e.shiftKey ? -1 : 1);
     case "ArrowUp":
       e.preventDefault();
-      return walk(-1);
+      return e.shiftKey ? walk(-1) : move(-1);
     case "ArrowDown":
       e.preventDefault();
-      return walk(1);
+      return e.shiftKey ? walk(1) : move(1);
     case "Backspace":
       // Backspace on an empty line closes it, as in vim.
       if (input.value === "") {
