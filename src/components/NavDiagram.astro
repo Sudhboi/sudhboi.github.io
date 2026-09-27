@@ -7,6 +7,7 @@ import {
   leq,
   meta,
   pages,
+  squares,
   type Loop,
   type Page,
 } from "../category";
@@ -81,6 +82,64 @@ const reachCss = pages
   })
   .join("");
 
+// Each commuting square gets a ⟲ in its middle, which chases it
+// (scripts/chase.ts): an anticlockwise arc with a head, drawn rather than
+// typeset so it doesn't depend on the font. The head is part of the path
+// (not a marker) so it takes the arc's hover colour. Pointing at one previews both
+// of its paths.
+const CELL_R = 7;
+// The arc runs anticlockwise (decreasing angles, y down) from upper left,
+// round the bottom, to upper right, leaving a gap at the top: ↺.
+const [ARC_FROM, ARC_TO] = [-120, -60];
+const cells = squares().map((sq, i) => {
+  const ps = [sq.from, sq.to, ...sq.via].map(pos);
+  const cx = ps.reduce((x, p) => x + p.x, 0) / 4;
+  const cy = ps.reduce((y, p) => y + p.y, 0) / 4;
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const at = (deg: number) =>
+    `${f(cx + CELL_R * Math.cos(rad(deg)))} ${f(cy + CELL_R * Math.sin(rad(deg)))}`;
+  // The head, at the arc's end, pointing the way it travels.
+  const tip = {
+    x: cx + CELL_R * Math.cos(rad(ARC_TO)),
+    y: cy + CELL_R * Math.sin(rad(ARC_TO)),
+  };
+  const heading = Math.atan2(-Math.cos(rad(ARC_TO)), Math.sin(rad(ARC_TO)));
+  const barb = (side: number) => {
+    const a = heading + Math.PI + side * rad(40);
+    return `${f(tip.x + 3.5 * Math.cos(a))} ${f(tip.y + 3.5 * Math.sin(a))}`;
+  };
+  const path = (via: Page) =>
+    [sq.from, via, sq.to].map((p) => meta[p].title).join(" → ");
+  return {
+    i,
+    cx,
+    cy,
+    d:
+      `M ${at(ARC_FROM)} A ${CELL_R} ${CELL_R} 0 1 0 ${at(ARC_TO)} ` +
+      `M ${barb(1)} L ${at(ARC_TO)} L ${barb(-1)}`,
+    from: sq.from,
+    to: sq.to,
+    via: sq.via.join(" "),
+    label: `Chase this square: ${path(sq.via[0])} equals ${path(sq.via[1])}`,
+  };
+});
+
+const chaseCss = squares()
+  .map((sq, i) => {
+    const on = `.diagram:has(.cell[data-square="${i}"]:is(:hover, :focus-visible))`;
+    const arrows = sq.via
+      .flatMap((v) => [
+        `[data-from="${sq.from}"][data-to="${v}"]`,
+        `[data-from="${v}"][data-to="${sq.to}"]`,
+      ])
+      .join(", ");
+    return (
+      `${on} .arrow:is(${arrows}) .stroke` +
+      `{stroke:var(--link);marker-end:url(#nav-head-chase)}`
+    );
+  })
+  .join("");
+
 // The identity loop leaves and re-enters a node on its free side.
 const DIRS: Record<Loop, Pt> = {
   up: { x: 0, y: -1 },
@@ -130,7 +189,7 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     role="group"
     style={`--w: ${f(maxX - minX)}px; aspect-ratio: ${f(maxX - minX)} / ${f(maxY - minY)}`}
   >
-    <style is:inline set:html={reachCss} />
+    <style is:inline set:html={reachCss + chaseCss} />
     <defs>
       <marker
         id="nav-head"
@@ -164,6 +223,17 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
         orient="auto-start-reverse"
       >
         <path class="head head-on" d="M 1 1 L 9 5 L 1 9"></path>
+      </marker>
+      <marker
+        id="nav-head-chase"
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path class="head head-chase" d="M 1 1 L 9 5 L 1 9"></path>
       </marker>
     </defs>
 
@@ -244,8 +314,28 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
         );
       })
     }
+
+    {
+      /* Hidden until scripts/chase.ts makes them work (data-chase).
+         Last, so they tab after the pages and sit on top. */
+      cells.map((c) => (
+        <g
+          class="cell"
+          data-square={c.i}
+          data-from={c.from}
+          data-to={c.to}
+          data-via={c.via}
+          aria-label={c.label}
+        >
+          <title>{c.label}</title>
+          <circle class="cell-hit" cx={f(c.cx)} cy={f(c.cy)} r="15" />
+          <path class="cell-arc" d={c.d} />
+        </g>
+      ))
+    }
   </svg>
   <p class="trail" hidden></p>
+  <p class="chase" aria-live="polite" hidden></p>
 </nav>
 
 <style>
@@ -255,8 +345,10 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     align-items: center;
   }
 
-  /* The composite of the arrows followed to get here; see scripts/trail.ts. */
-  .trail {
+  /* The composite of the arrows followed to get here; see scripts/trail.ts.
+     And the equation a chase shows (scripts/chase.ts). */
+  .trail,
+  .chase {
     margin: 0.25rem 0 0;
     color: var(--muted);
     font-size: 0.8rem;
@@ -358,6 +450,91 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     stroke: var(--fg);
   }
 
+  .head-chase {
+    stroke: var(--link);
+  }
+
+  /* The ⟲ in each commuting square. */
+  .cell {
+    visibility: hidden;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .diagram[data-chase] .cell {
+    visibility: visible;
+  }
+
+  .cell-hit {
+    fill: transparent;
+  }
+
+  .cell-arc {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.15s;
+  }
+
+  .cell:hover .cell-arc,
+  .cell:focus-visible .cell-arc {
+    stroke: var(--link);
+  }
+
+  .cell:focus-visible .cell-hit {
+    stroke: var(--link);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+  }
+
+  /* A chase (scripts/chase.ts): both paths lit, the corner where the dots
+     meet, and the ⟲ turning once. */
+  .arrow.chasing .stroke {
+    stroke: var(--link);
+    stroke-width: 1.5;
+    marker-end: url(#nav-head-chase);
+  }
+
+  .obj.meet text {
+    fill: var(--link);
+    font-weight: 700;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: meet 0.45s ease-out;
+  }
+
+  @keyframes meet {
+    40% {
+      transform: scale(1.2);
+    }
+  }
+
+  .cell.spin .cell-arc {
+    stroke: var(--link);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: spin 0.6s ease-in-out;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  .chase {
+    color: var(--link);
+    animation: chase-in 0.3s ease-out;
+  }
+
+  @keyframes chase-in {
+    from {
+      opacity: 0;
+    }
+  }
+
   .current text.id-label {
     fill: var(--link);
     font-weight: 400;
@@ -379,8 +556,15 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
 
   @media (prefers-reduced-motion: reduce) {
     .id,
-    .current text.id-label {
+    .current text.id-label,
+    .cell-arc {
       transition: none;
+    }
+
+    .obj.meet text,
+    .cell.spin .cell-arc,
+    .chase {
+      animation: none;
     }
   }
 </style>

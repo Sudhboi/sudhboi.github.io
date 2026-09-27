@@ -4,6 +4,7 @@
 //   :t <thing>     its type: a page, a token from the pages, or the author
 //   :browse        the pages and arrows of the category
 //   :set bg=dark   switch light / dark (scripts/theme.ts)
+//   :chase [page]  chase a square of the diagram (scripts/chase.ts)
 //   :q             close it
 //   :pwd, :help and a few others
 //
@@ -15,6 +16,7 @@
 
 import { arrows, meta, pages, type Page } from "../category";
 import { kinds, kindType } from "../kinds";
+import { all as squares, chase } from "./chase";
 import { current, toggle } from "./theme";
 import { travelTo } from "./travel";
 
@@ -163,6 +165,25 @@ const commands: Command[] = [
       { value: "bg=dark", hint: "dark mode" },
     ],
     run: set,
+  },
+  {
+    name: "chase",
+    usage: "chase [page]",
+    hint: "show a square of the diagram commutes",
+    listed: true,
+    // Each square, by the page where its two paths meet.
+    args: () =>
+      squares.map((sq) => ({
+        value: sq.to,
+        hint: `${meta[sq.from].title} ⇉ ${meta[sq.to].title}`,
+      })),
+    run: (arg) => {
+      const to = arg ? findPage(arg) : undefined;
+      const sq = squares.find((s) => s.to === to);
+      if (arg && !sq) return `E486: No square ends at: ${arg}`;
+      close();
+      void chase(sq);
+    },
   },
   {
     name: "pwd",

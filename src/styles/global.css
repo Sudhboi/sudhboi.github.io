@@ -246,6 +246,12 @@ html[data-travel] body > :not(.travel-stage) {
   fill: var(--fg);
 }
 
+/* The dots of a chase along the nav diagram itself (scripts/chase.ts). Made
+   at run time, so out of reach of NavDiagram's scoped styles. */
+nav .diagram .dot {
+  fill: var(--link);
+}
+
 /* Read out by screen readers, but not shown. */
 .visually-hidden {
   position: absolute;

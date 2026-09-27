@@ -159,7 +159,11 @@ class Stage {
         "marker-end",
         el.getAttribute("marker-end")!.replace("url(#", "url(#travel-"),
       );
-    for (const el of this.svg.querySelectorAll(".id, .id-label")) el.remove();
+    // Nor the chase: its ⟲ cells, dots and lit arrows (scripts/chase.ts).
+    for (const el of this.svg.querySelectorAll(".id, .id-label, .cell, .dot"))
+      el.remove();
+    for (const el of this.svg.querySelectorAll(".chasing, .meet"))
+      el.classList.remove("chasing", "meet");
     for (const el of this.svg.querySelectorAll(".current")) {
       el.classList.remove("current");
       el.removeAttribute("aria-current");
@@ -251,27 +255,8 @@ class Stage {
     }
   }
 
-  // A dot running along the arrow from a to b, which may be against it.
-  async dot(arrow: SVGGElement | null, a: Page) {
-    const line = arrow?.querySelector<SVGLineElement>(".stroke");
-    if (!arrow || !line) return;
-    const n = (k: string) => line.getAttribute(k)!;
-    let [start, end] = [`${n("x1")}px, ${n("y1")}px`, `${n("x2")}px, ${n("y2")}px`];
-    if (arrow.dataset.from !== a) [start, end] = [end, start];
-    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    dot.classList.add("dot");
-    dot.setAttribute("r", "2.5");
-    this.svg.append(dot);
-    await dot.animate(
-      [
-        { transform: `translate(${start})`, opacity: 0 },
-        { opacity: 1, offset: 0.2 },
-        { opacity: 1, offset: 0.8 },
-        { transform: `translate(${end})`, opacity: 0 },
-      ],
-      { duration: ms(HOP), easing: "ease-in-out" },
-    ).finished;
-    dot.remove();
+  dot(arrow: SVGGElement | null, a: Page) {
+    return runDot(this.svg, arrow, a, ms(HOP));
   }
 
   remove() {
@@ -280,9 +265,41 @@ class Stage {
   }
 }
 
+// A dot running along the arrow from a to b in svg, which may be against it.
+// Also used by scripts/chase.ts.
+export async function runDot(
+  svg: SVGSVGElement,
+  arrow: SVGGElement | null,
+  a: Page,
+  duration: number,
+) {
+  const line = arrow?.querySelector<SVGLineElement>(".stroke");
+  if (!arrow || !line) return;
+  const n = (k: string) => line.getAttribute(k)!;
+  let [start, end] = [`${n("x1")}px, ${n("y1")}px`, `${n("x2")}px, ${n("y2")}px`];
+  if (arrow.dataset.from !== a) [start, end] = [end, start];
+  const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  dot.classList.add("dot");
+  dot.setAttribute("r", "2.5");
+  svg.append(dot);
+  await dot.animate(
+    [
+      { transform: `translate(${start})`, opacity: 0 },
+      { opacity: 1, offset: 0.2 },
+      { opacity: 1, offset: 0.8 },
+      { transform: `translate(${end})`, opacity: 0 },
+    ],
+    { duration, easing: "ease-in-out" },
+  ).finished;
+  dot.remove();
+}
+
 const diagram = () => document.querySelector<SVGSVGElement>("nav .diagram");
 
 let busy = false;
+
+// Whether a trip is playing (scripts/chase.ts waits its turn).
+export const travelling = () => busy;
 
 // Skip on any click or key while a trip plays.
 function during<T>(run: () => Promise<T>): Promise<T> {
