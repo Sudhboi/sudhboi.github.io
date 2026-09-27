@@ -335,7 +335,7 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     }
   </svg>
   <p class="trail" hidden></p>
-  <p class="chase" aria-live="polite" hidden></p>
+  <p class="chase" aria-live="polite" hidden><span></span></p>
 </nav>
 
 <style>
@@ -524,15 +524,38 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     }
   }
 
+  /* The chase's equation opens up (moving what's around it smoothly) and
+     then fades in; going, it fades and then closes. It's always in the
+     layout once scripts/chase.ts runs, at zero height until .shown. */
   .chase {
+    display: grid;
+    grid-template-rows: 0fr;
+    margin: 0;
     color: var(--link);
-    animation: chase-in 0.3s ease-out;
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      grid-template-rows 0.35s ease 0.1s,
+      margin-top 0.35s ease 0.1s;
   }
 
-  @keyframes chase-in {
-    from {
-      opacity: 0;
-    }
+  .chase[hidden] {
+    display: none;
+  }
+
+  .chase.shown {
+    grid-template-rows: 1fr;
+    margin-top: 0.25rem;
+    opacity: 1;
+    transition:
+      grid-template-rows 0.35s ease,
+      margin-top 0.35s ease,
+      opacity 0.3s ease 0.15s;
+  }
+
+  .chase > span {
+    min-height: 0;
+    overflow: hidden;
   }
 
   .current text.id-label {
@@ -562,9 +585,13 @@ const viewBox = [minX, minY, maxX - minX, maxY - minY].map(f).join(" ");
     }
 
     .obj.meet text,
-    .cell.spin .cell-arc,
-    .chase {
+    .cell.spin .cell-arc {
       animation: none;
+    }
+
+    .chase,
+    .chase.shown {
+      transition: none;
     }
   }
 </style>

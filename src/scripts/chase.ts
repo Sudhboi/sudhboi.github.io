@@ -16,11 +16,13 @@ const SHOW = 3000; // ms the result stays up
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 const svg = document.querySelector<SVGSVGElement>("nav .diagram");
 const line = document.querySelector<HTMLElement>("nav .chase");
+const text = line?.querySelector("span");
 export const all = squares();
 
 let next = 0; // which square `c` chases next
 let run = 0; // the chase playing now; older ones stop where they are
 let fade: number | undefined;
+let emptying: number | undefined;
 
 const arrow = (a: Page, b: Page) =>
   svg?.querySelector<SVGGElement>(`.arrow[data-from="${a}"][data-to="${b}"]`) ??
@@ -34,8 +36,12 @@ function clear() {
   if (!svg || !line) return;
   for (const el of svg.querySelectorAll(".chasing, .meet, .spin"))
     el.classList.remove("chasing", "meet", "spin");
-  line.hidden = true;
-  line.textContent = "";
+  // Close it (see .chase in NavDiagram.astro), and empty it once closed.
+  line.classList.remove("shown");
+  window.clearTimeout(emptying);
+  emptying = window.setTimeout(() => {
+    if (text && !line.classList.contains("shown")) text.textContent = "";
+  }, 500);
 }
 
 export async function chase(sq: Square = all[next % all.length]) {
@@ -68,8 +74,9 @@ export async function chase(sq: Square = all[next % all.length]) {
   // They meet: the far corner lights up and the ⟲ turns.
   svg.querySelector(`.obj[data-page="${sq.to}"]`)?.classList.add("meet");
   svg.querySelector(`.cell[data-square="${all.indexOf(sq)}"]`)?.classList.add("spin");
-  line.textContent = `${path(sq, sq.via[0])} = ${path(sq, sq.via[1])}`;
-  line.hidden = false;
+  window.clearTimeout(emptying);
+  if (text) text.textContent = `${path(sq, sq.via[0])} = ${path(sq, sq.via[1])}`;
+  line.classList.add("shown");
   fade = window.setTimeout(() => {
     if (id === run) clear();
   }, SHOW);
@@ -90,4 +97,6 @@ if (svg) {
     });
   }
   svg.dataset.chase = "";
+  // In the layout from now on, closed until a chase opens it.
+  if (line) line.hidden = false;
 }
