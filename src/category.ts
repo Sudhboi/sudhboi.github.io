@@ -102,6 +102,33 @@ export function route(
   return { teleport: true, path: path("home", to)! };
 }
 
+// A commuting square: two different two-arrow paths from `from` to `to`, via
+// `via[0]` and via `via[1]`. The category is thin, so their composites are
+// the same morphism: that's what chasing one (scripts/chase.ts) shows.
+export interface Square {
+  from: Page;
+  to: Page;
+  via: readonly [Page, Page];
+}
+
+// Every square in the diagram, left to right, each with its left-hand path
+// first.
+export function squares(): Square[] {
+  const out: Square[] = [];
+  for (const a of pages)
+    for (const d of pages) {
+      const mids = successors(a)
+        .filter((b) => successors(b).includes(d))
+        .sort((x, y) => layout[x].at[0] - layout[y].at[0]);
+      for (let i = 0; i < mids.length; i++)
+        for (let j = i + 1; j < mids.length; j++)
+          out.push({ from: a, to: d, via: [mids[i], mids[j]] });
+    }
+  const centre = (s: Square) =>
+    [s.from, s.to, ...s.via].reduce((x, p) => x + layout[p].at[0], 0);
+  return out.sort((s, t) => centre(s) - centre(t));
+}
+
 // Everything wrong with the diagram; empty when all is well.
 export function diagramProblems(): string[] {
   const problems: string[] = [];
