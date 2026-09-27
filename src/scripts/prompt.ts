@@ -471,3 +471,9 @@ list?.addEventListener("mousedown", (e) => e.preventDefault());
 form?.addEventListener("focusout", (e) => {
   if (!form.contains(e.relatedTarget as Node | null)) close(false);
 });
+
+// The hint at the bottom of the window opens it too (the only way in on a
+// touch screen), and only shows once that works.
+const hint = document.querySelector<HTMLButtonElement>(".prompt-hint");
+hint?.addEventListener("click", () => openPrompt());
+hint?.removeAttribute("hidden");
