@@ -197,6 +197,7 @@ const commands: Command[] = [
     listed: false,
     run: () => "E45: 'readonly' option is set (add ! to override)",
   },
+  { name: "wq!", usage: "wq!", hint: "", listed: false, run: () => "force wrote nothing" },
   {
     name: "x",
     usage: "x",
