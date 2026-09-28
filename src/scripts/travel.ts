@@ -4,7 +4,9 @@
 // diagram, pans the camera along the arrows to the target, then loads it; the
 // new page zooms back in out of its node. The route is `route()` from the
 // category: forwards along arrows when a morphism exists, else a teleport to
-// Home and on from there.
+// Home and on from there. A teleport zooms out straight onto Home rather than
+// onto the page being left (and, played in reverse, zooms straight in from
+// Home).
 //
 // Back / forward can't be delayed, so the arriving page plays the trip
 // instead: back replays the trip that made that history step in reverse
@@ -38,7 +40,6 @@ interface Leg {
 
 const ZOOM = 250; // ms to zoom out of, or into, a page
 const HOP = 250; // ms per arrow
-const JUMP = 550; // ms per teleport: pull back, glide over, zoom back in
 const SHRINK = 0.92; // how far the page shrinks as it zooms out
 
 const root = document.documentElement;
@@ -120,8 +121,6 @@ class Stage {
   centre = new Map<Page, { x: number; y: number }>();
   rect: DOMRect;
   zoom: number;
-  // A wider zoom that shows the whole diagram, for teleports.
-  overview: number;
   // Whether the nav is on screen to grow out of (not on a scrolled phone).
   inView: boolean;
 
@@ -142,13 +141,6 @@ class Stage {
     const about = this.centre.get("about")!;
     const col = Math.abs(about.x - home.x) || 1;
     this.zoom = Math.min(3, Math.max(1, (0.4 * innerWidth) / col));
-    // Fit the whole diagram, but always pull back well beyond the travel
-    // zoom: on wide screens the two are nearly the same.
-    const fit = Math.min(
-      (0.9 * innerWidth) / this.rect.width,
-      (0.9 * innerHeight) / this.rect.height,
-    );
-    this.overview = Math.min(fit, 0.6 * this.zoom);
 
     this.svg = original.cloneNode(true) as SVGSVGElement;
     // Give the copy its own marker ids: markers inherit visibility from where
@@ -183,15 +175,12 @@ class Stage {
     original.style.visibility = "hidden";
   }
 
-  // Put the point c (relative to the diagram) in the middle of the window.
-  camAt(c: { x: number; y: number }, zoom: number) {
-    const x = innerWidth / 2 - this.rect.left - zoom * c.x;
-    const y = innerHeight / 2 - this.rect.top - zoom * c.y;
-    return `translate(${x}px, ${y}px) scale(${zoom})`;
-  }
-
-  cam(p: Page, zoom = this.zoom) {
-    return this.camAt(this.centre.get(p)!, zoom);
+  // Put p in the middle of the window.
+  cam(p: Page) {
+    const c = this.centre.get(p)!;
+    const x = innerWidth / 2 - this.rect.left - this.zoom * c.x;
+    const y = innerHeight / 2 - this.rect.top - this.zoom * c.y;
+    return `translate(${x}px, ${y}px) scale(${this.zoom})`;
   }
 
   // Where the copy sits exactly over the original.
@@ -208,10 +197,10 @@ class Stage {
     );
   }
 
-  move(frames: Keyframe[], duration: number, easing = "ease-in-out") {
+  move(frames: Keyframe[], duration: number) {
     return this.svg.animate(frames, {
       duration: ms(duration),
-      easing,
+      easing: "ease-in-out",
       fill: "forwards",
     }).finished;
   }
@@ -222,29 +211,10 @@ class Stage {
     void this.move([{ transform: this.cam(p) }], 0);
   }
 
+  // Play legs along arrows. Teleports never get here: they're replaced by
+  // zooming out onto, or in from, Home.
   async play(ls: Leg[]) {
-    for (const { a, b, jump } of ls) {
-      if (jump) {
-        // Pull back to see the whole diagram, glide over, and zoom in on b.
-        const middle = { x: this.rect.width / 2, y: this.rect.height / 2 };
-        const halfway = setTimeout(() => this.here(b), ms(JUMP / 2));
-        await this.move(
-          [
-            { transform: this.cam(a), easing: "ease-in-out" },
-            {
-              transform: this.camAt(middle, this.overview),
-              easing: "ease-in-out",
-              offset: 0.5,
-            },
-            { transform: this.cam(b) },
-          ],
-          JUMP,
-          "linear",
-        );
-        clearTimeout(halfway);
-        this.here(b);
-        continue;
-      }
+    for (const { a, b } of ls) {
       const arrow = this.arrow(a, b);
       arrow?.classList.add("lit");
       await Promise.all([
@@ -322,16 +292,20 @@ export function travelTo(to: Page) {
   if (busy) return skip();
   if (!from || !svg || from === to || still.matches) return location.assign(href);
   const trip: Trip = { from, to, ...route(from, to) };
+  const ls = legs(trip);
+  // A teleport comes first: zoom out straight onto Home instead.
+  const first = ls[0]?.jump ? ls.shift()!.b : from;
   void during(async () => {
     const stage = new Stage(svg);
     stage.here(from);
+    const halfway = setTimeout(() => stage.here(first), ms(ZOOM / 2));
     await Promise.all([
       stage.move(
         stage.inView
-          ? [{ transform: stage.home }, { transform: stage.cam(from) }]
+          ? [{ transform: stage.home }, { transform: stage.cam(first) }]
           : [
-              { transform: stage.cam(from), opacity: 0 },
-              { transform: stage.cam(from), opacity: 1 },
+              { transform: stage.cam(first), opacity: 0 },
+              { transform: stage.cam(first), opacity: 1 },
             ],
         ZOOM,
       ),
@@ -341,7 +315,9 @@ export function travelTo(to: Page) {
       }).finished,
       ...zoomScene(true).map((a) => a.finished),
     ]);
-    await stage.play(legs(trip));
+    clearTimeout(halfway);
+    stage.here(first);
+    await stage.play(ls);
     write("travel", { href, t: Date.now(), trip });
     location.assign(href);
   });
@@ -381,7 +357,7 @@ function arrive(backForward: boolean) {
       Date.now() - arrived.t < 5000
     ) {
       state.trip = arrived.trip;
-      lit = legs(arrived.trip);
+      lit = legs(arrived.trip).filter((l) => !l.jump);
       ls = [];
       start = here;
     } else if (backForward) {
@@ -404,13 +380,16 @@ function arrive(backForward: boolean) {
     delete root.dataset.travel;
     return;
   }
-  const from = start;
   const trip = ls;
+  // A teleport first (forward) starts on Home; one last (back) is replaced by
+  // zooming straight in from Home.
+  const from = trip[0]?.jump ? trip.shift()!.b : start;
+  const end = trip.at(-1)?.jump ? trip.pop()!.a : here;
   void during(async () => {
     const stage = new Stage(svg);
     for (const l of lit) stage.arrow(l.a, l.b)?.classList.add("lit");
     stage.at(from);
-    if (trip.length > 0) {
+    if (backForward) {
       // Nothing zoomed out on the way here (the browser just went), so fade in.
       await stage.move([{ opacity: 0 }, { opacity: 1 }], 150);
       await stage.play(trip);
@@ -421,10 +400,10 @@ function arrive(backForward: boolean) {
     await Promise.all([
       stage.move(
         stage.inView
-          ? [{ transform: stage.cam(here) }, { transform: stage.home }]
+          ? [{ transform: stage.cam(end) }, { transform: stage.home }]
           : [
-              { transform: stage.cam(here), opacity: 1 },
-              { transform: stage.cam(here), opacity: 0 },
+              { transform: stage.cam(end), opacity: 1 },
+              { transform: stage.cam(end), opacity: 0 },
             ],
         ZOOM,
       ),
