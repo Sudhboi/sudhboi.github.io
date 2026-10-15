@@ -6,9 +6,10 @@
 //   H L       back / forward in history
 //   t         toggle light / dark (scripts/theme.ts)
 //   c         chase the next square of the diagram (scripts/chase.ts)
-//   :         open the command line (scripts/prompt.ts)
+//   :         open the command line (scripts/prompt.ts), if src/features.ts has it on
 //   ?         show or hide the cheatsheet
 
+import * as features from "../features";
 import { chase } from "./chase";
 import { openPrompt } from "./prompt";
 import { travelTo } from "./travel";
@@ -123,6 +124,7 @@ document.addEventListener("keydown", (e) => {
     case "c":
       return void chase();
     case ":":
+      if (!features.prompt) return;
       // Don't let the ":" land in the input as it takes focus.
       e.preventDefault();
       return openPrompt();
